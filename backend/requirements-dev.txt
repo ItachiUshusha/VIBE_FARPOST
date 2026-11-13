@@ -1,0 +1,4 @@
+-r requirements.txt
+pytest>=8,<10
+mongomock>=4.3,<5
+osmnx>=2.0,<3

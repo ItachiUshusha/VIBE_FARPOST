@@ -1,0 +1,3093 @@
+{
+  "dataset_version": "pervaya-rechka-v1",
+  "source": "OpenStreetMap / сохранённая выгрузка OSMnx",
+  "edges": {
+    "257051082:6798039886:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "257051082:302255635:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "257162756:257162797:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "257162756:1067190898:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "257162797:258051856:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "257162797:257162756:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "257538587:258048495:0": {
+      "lane_count": null,
+      "lane_min": 3,
+      "lane_max": 4,
+      "lanes_raw": "['3', '4']",
+      "lanes_source": "OpenStreetMap"
+    },
+    "257538587:1874119371:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "257538587:4712926319:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "257538590:916433478:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "257538592:4712921042:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "257538592:292680414:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258048481:4712944366:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258048490:2192683245:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258048490:306665591:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258048493:4712925566:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258048493:6144381856:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258048493:4712944366:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258048495:4712925566:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258048495:257538587:0": {
+      "lane_count": null,
+      "lane_min": 3,
+      "lane_max": 4,
+      "lanes_raw": "['3', '4']",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258048495:259576292:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258048496:259535938:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258048496:306665591:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258051661:258051667:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258051671:916863660:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258051701:310591186:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258051735:2069302236:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258051752:1615543810:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258051752:1824110869:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258051856:257162797:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258051856:292686464:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258808060:264653533:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "258808060:1750461728:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535563:2500750803:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535563:333741568:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535577:2522781348:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535577:408744755:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535577:1843568872:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535607:441718257:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535612:2108572561:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535829:313401223:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535864:4848842740:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535864:4712928852:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535864:312410491:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535900:6798039886:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535900:602440757:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535938:259535944:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535938:293588946:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535939:306665651:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535939:259535946:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535942:259535943:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535943:1874119434:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535943:259535944:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535944:259535949:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535946:1883376477:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535946:259535939:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535949:4712923529:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535949:259535950:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259535950:4712928054:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576224:10836991818:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576226:10836991813:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576226:10836929802:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576229:10836991807:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576229:2443812644:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576247:611548591:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576247:259576251:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576251:259576254:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576254:259576257:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576254:259576271:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576257:259576247:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576257:370393937:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576271:259576254:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576271:492034463:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576290:259576292:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576291:259576292:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576291:4712924562:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576292:259576291:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576292:259576290:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "259576292:258048495:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "262097581:930498954:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "262097592:329585754:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "262097631:2522810221:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "262097631:2522810220:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "264653389:747637451:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "264653389:750636725:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "264653407:1834940392:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "264653415:1067186889:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "264653533:1834939721:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "264653533:258808060:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "264653570:1750461728:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "278875277:292672870:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "281281861:302255635:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "281281861:4712923462:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "292660899:264653419:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "292660899:1834854319:0": {
+      "lane_count": null,
+      "lane_min": 2,
+      "lane_max": 4,
+      "lanes_raw": "['2', '4']",
+      "lanes_source": "OpenStreetMap"
+    },
+    "292672870:278875277:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "292677018:1842211454:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "292677018:293254681:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "292680414:257538592:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "292680414:292680418:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "292680418:292680414:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "292680418:349349285:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "292686464:258051856:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "292686464:303791654:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "293254681:292677018:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "293254681:1835220357:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "293588941:257538587:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "293588941:4245582930:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "293588946:1989325392:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "293588946:4245582930:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "302255635:257051082:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "302255635:2828162908:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "302255635:281281861:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "302286242:4712926349:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "302286242:4712923462:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "302942676:257538590:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "303399717:309985806:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "303399717:930453094:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "303784779:1826306925:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "303791654:292686464:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "303791654:379794812:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "303792290:638205280:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "306665591:258048490:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "306665591:258048496:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "306665651:306665591:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "306665651:259535938:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "307558430:307558603:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "307558588:307558603:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "307558603:5563707607:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "307558603:307558430:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "307558603:307558588:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "309985806:303399717:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "309985806:1067186889:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "310591186:258051694:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "310592347:1826306841:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "312410491:259535864:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "312410491:732941670:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "313401223:259535939:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "319374381:3013559192:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "319374381:4052207329:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "329585754:10836991826:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "329585754:2443812644:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "329585786:1889476002:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "333741568:259535563:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "333741568:441719577:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "333741568:2189343194:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "348609034:606366163:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "348609471:930499068:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "349349285:292680418:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "349349285:1885043615:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "370393937:1834940870:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "370393937:259576257:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "379794812:303791654:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "379794812:1824110850:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "385158492:1834861003:0": {
+      "lane_count": null,
+      "lane_min": 2,
+      "lane_max": 3,
+      "lanes_raw": "['2', '3']",
+      "lanes_source": "OpenStreetMap"
+    },
+    "385159020:930499304:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "393161946:1737160594:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "408744755:259535577:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "408744755:408744756:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "408744755:2522781348:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "408744756:408744755:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "422037052:262097631:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "441718257:441719577:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "441718257:1843568872:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "441718257:259535607:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "441719577:333741568:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "441719577:441718257:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "449513884:930453094:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "449513884:2247676397:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "492034463:259576271:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "492034463:3013559192:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "497684608:644600772:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "602440757:1834863461:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "602440757:259535900:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "606366163:4821730294:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "611548591:259576247:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "611548591:4638968549:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "615091417:4712922804:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "615091417:258051661:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "638205249:2522810216:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "638205251:638205252:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "638205252:638205253:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "638205253:638205254:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "638205254:638205249:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "638205254:638205256:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "638205255:638205253:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "638205255:747637451:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "638205256:638205249:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "638205256:2527841257:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "638205280:778107446:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "638205312:262097631:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "638205312:262097592:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "644600742:259576224:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "644600771:1834940865:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "644600772:10836929798:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "648676579:644600771:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "661956139:966667210:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "732941670:4675921377:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "732941670:312410491:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "747637451:264653389:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "747637451:638205255:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "747637451:2490572760:0": {
+      "lane_count": null,
+      "lane_min": 1,
+      "lane_max": 2,
+      "lanes_raw": "['1', '2']",
+      "lanes_source": "OpenStreetMap"
+    },
+    "748641712:2490574679:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "750636725:264653389:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "752186184:615091417:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "778107446:638205251:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "778107457:1877430011:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "916433478:916433479:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "916433478:259535943:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "916863660:292686464:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "916863660:1824110862:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "930453029:606366163:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "930453092:930453115:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "930453094:449513884:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "930453094:303399717:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "930453115:930453029:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "930498954:258051661:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "930498954:303792290:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "930499068:258051671:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "930499304:348609040:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "930499304:385158492:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "958039180:2490642091:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "958039188:2500750803:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "958048240:1809807585:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "958048240:1067176756:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "966667210:2287587599:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "966667210:661956139:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1067176771:2522781348:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1067186889:309985806:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1067186889:264653415:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1067190895:257162756:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1083016108:2490572760:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1083016108:1834854319:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1508164995:4712934936:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1615543810:258051752:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1615543810:4562802735:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1615543810:1824110850:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1677965405:258048481:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1710884859:1834854318:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1710884859:1834854317:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1737160566:3372091417:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1737160594:1809515347:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1737160594:3372091427:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1737160594:3372091421:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1750461728:258808060:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1750461728:264653570:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1805865921:1884712406:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1805865924:1805865921:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1805865924:2572487249:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1805865924:3372091409:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1805892924:2625646955:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1805892924:1846296358:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1809515347:1884712373:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1809807585:2287587603:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1809807585:958048240:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1811228142:292672870:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1811228142:1834854317:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1824110850:4562802735:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1824110850:379794812:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1824110861:385159020:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1824110862:258051701:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1824110869:258051752:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1824110869:2069302236:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1826041636:4763130185:0": {
+      "lane_count": null,
+      "lane_min": 1,
+      "lane_max": 2,
+      "lanes_raw": "['1', '2']",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1826306841:310592347:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1826306925:1824110861:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1833678850:1885043615:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1833678850:1834940870:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834854317:1710884859:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834854317:1811228142:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834854318:1835220360:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834854318:1835220357:0": {
+      "lane_count": null,
+      "lane_min": 3,
+      "lane_max": 4,
+      "lanes_raw": "['3', '4']",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834854319:2527841257:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834854319:292660899:0": {
+      "lane_count": null,
+      "lane_min": 2,
+      "lane_max": 4,
+      "lanes_raw": "['2', '4']",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834860991:393161946:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834861003:4712923852:0": {
+      "lane_count": null,
+      "lane_min": 1,
+      "lane_max": 3,
+      "lanes_raw": "['1', '3']",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834861003:4712923851:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834863461:602440757:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834939721:264653533:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834939721:2490574679:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834939724:1067186889:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834940392:4821730756:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834940865:1885043615:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834940870:370393937:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1834940870:1833678850:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1835220357:293254681:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1835220357:1834854318:0": {
+      "lane_count": null,
+      "lane_min": 3,
+      "lane_max": 4,
+      "lanes_raw": "['3', '4']",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1835220358:1835220360:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1835220360:2936701078:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1835220360:258048496:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1842211454:2828162908:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1842211454:2572487246:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1842211454:292677018:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1843568872:408744755:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1843568872:259535577:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1843568872:441718257:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1846296358:2572487246:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1846296358:1805892924:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1846296358:2572487249:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1874119371:4712924737:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1874119371:4712925566:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1874119434:259535942:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1874119434:293588941:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1877429976:1737160566:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1877430011:11067432437:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1883376477:4712930411:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1883376477:259535946:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1884668105:2625646955:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1884668105:1884668119:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1884668116:2192683245:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1884712367:661956139:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1884712367:1737160566:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1884712373:4817322970:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1884712406:966667210:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1884712424:1809515347:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1885043615:349349285:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1885043615:1833678850:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1889476000:1889476002:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1889476002:1889476000:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1889476002:329585786:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1909519708:1884712367:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1938927413:1834860991:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1938927414:1938927428:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "1938927428:262097581:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2069302236:258051735:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2069302236:1824110869:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2108572561:259535612:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2189343194:333741568:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2192683245:1884668103:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2192683245:258048490:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2247676396:449513884:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2247676397:4821730293:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2279055701:12716091159:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2287587599:1809807585:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2287587599:2287587603:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2287587603:3372091409:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2287587603:1809807585:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2443812637:2490595244:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2443812637:262097581:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2443812644:4712923686:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2490572760:1083016108:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2490572760:2490642091:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2490572760:747637451:0": {
+      "lane_count": null,
+      "lane_min": 1,
+      "lane_max": 2,
+      "lanes_raw": "['1', '2']",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2490574679:1834939721:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2490595244:1938927413:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2490642091:2490642092:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2490642091:2490572760:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2500750803:259535563:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2500750803:958039190:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2522781348:259535577:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2522781348:1067176771:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2522810216:778107457:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2522810216:638205251:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2522810220:262097592:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2522810220:1938927414:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2522810221:1834860991:0": {
+      "lane_count": null,
+      "lane_min": 3,
+      "lane_max": 4,
+      "lanes_raw": "['3', '4']",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2527841257:1834854319:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2527841257:638205256:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2572487246:1842211454:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2572487246:2572487249:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2572487249:1805865924:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2572487249:1846296358:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2625646955:1805892924:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2625646955:1884668119:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2828162908:1842211454:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2828162908:302255635:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "2936701078:4712926196:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "3013559192:319374381:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "3013559192:492034463:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "3372091409:2287587603:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "3372091409:1805865921:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "3372091409:1805865924:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "3372091417:1884712424:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "3372091417:3372091421:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "3372091421:1508164995:0": {
+      "lane_count": null,
+      "lane_min": 3,
+      "lane_max": 4,
+      "lanes_raw": "['3', '4']",
+      "lanes_source": "OpenStreetMap"
+    },
+    "3372091427:929001282:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4052207329:319374381:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4245582930:1874119434:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4562802735:1824110850:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4562802735:1615543810:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4638968549:648676579:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4638968549:611548591:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4675921377:259576229:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4675921377:10836991807:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712921040:257538592:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712921040:302942676:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712921042:302942676:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712922804:638205280:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712923295:4712944366:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712923462:302286242:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712923462:281281861:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712923529:916433478:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712923686:10836991820:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712923686:644600742:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712923851:2522810221:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712923851:4712923852:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712923852:422037052:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712924562:4712924562:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712924562:259576291:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712924737:1710884859:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712924737:1677965405:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712925566:258048493:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712925566:258048495:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712925566:1874119371:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712926196:2936701078:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712926319:2279055701:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712926319:4712926349:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712926349:302286242:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712926349:2279055701:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712928054:4712921040:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712928852:4712921040:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712928852:259535864:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712930411:1883376477:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712930411:4848842740:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712934936:752186184:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712944366:258048481:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712944366:258048493:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4712944366:4712923295:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4763130185:1826041636:0": {
+      "lane_count": null,
+      "lane_min": 1,
+      "lane_max": 2,
+      "lanes_raw": "['1', '2']",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4821730293:930453092:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4821730294:2247676396:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4821730757:13115867331:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4848842740:259535864:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "4848842740:4712930411:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "5563707607:307558603:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "6144381856:258048493:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "6798039886:259535900:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "6798039886:257051082:0": {
+      "lane_count": 4,
+      "lane_min": 4,
+      "lane_max": 4,
+      "lanes_raw": "4",
+      "lanes_source": "OpenStreetMap"
+    },
+    "10836929798:10836929802:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "10836929798:259576226:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "10836929802:732941670:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "10836991807:2443812637:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "10836991813:259576229:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "10836991818:259576226:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "10836991818:10836991813:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "10836991820:4638968549:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "10836991820:644600742:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "10836991826:10836991820:0": {
+      "lane_count": 1,
+      "lane_min": 1,
+      "lane_max": 1,
+      "lanes_raw": "1",
+      "lanes_source": "OpenStreetMap"
+    },
+    "11067432437:638205312:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    },
+    "12716091159:258048496:0": {
+      "lane_count": 3,
+      "lane_min": 3,
+      "lane_max": 3,
+      "lanes_raw": "3",
+      "lanes_source": "OpenStreetMap"
+    },
+    "13115867331:748641712:0": {
+      "lane_count": 2,
+      "lane_min": 2,
+      "lane_max": 2,
+      "lanes_raw": "2",
+      "lanes_source": "OpenStreetMap"
+    }
+  }
+}
