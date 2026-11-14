@@ -72,7 +72,8 @@ def main():
         temporary = APPROVAL_PATH.with_suffix(".tmp")
         temporary.write_text(json.dumps(bundle, ensure_ascii=False, indent=2), encoding="utf-8")
         os.replace(temporary, APPROVAL_PATH)
-        print("Утверждённый комплект сохранён. Для публикации задайте LEGAL_PUBLISHED=true и LEGAL_VERSION=" + args.version)
+        print("Утверждённый комплект сохранён. В режиме auto он публикуется при поставке с backend. "
+              "Для режима manual задайте LEGAL_PUBLISHED=true и LEGAL_VERSION=" + args.version)
         return
     client, db = connect(cfg)
     try:

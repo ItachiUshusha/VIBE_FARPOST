@@ -41,6 +41,9 @@ export default function SiteServices({ children }: { children: ReactNode }) {
   const [resolved, setResolved] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [config, setConfig] = useState<Config | null>(null);
+  const [configLoading, setConfigLoading] = useState(true);
+  const [configError, setConfigError] = useState(false);
+  const [configRetry, setConfigRetry] = useState(0);
   const frame = useRef<HTMLIFrameElement>(null);
   const attachFrame = useCallback((node: HTMLIFrameElement | null) => { if (frame.current && frame.current !== node) disableFrame(frame.current); frame.current = node; }, []);
   const frameReady = useRef(false);
@@ -58,13 +61,30 @@ export default function SiteServices({ children }: { children: ReactNode }) {
     const stored = readConsent(); consentCookie(false); setConsent(stored); setResolved(true);
     const storage = (event: StorageEvent) => { if (event.key === STORAGE) { latest.current.permitted = false; queue.current = []; frameReady.current = false; flushSync(() => setConsent(readConsent())); } };
     window.addEventListener("storage", storage);
-    fetch("/api/site/config", { cache: "no-store" }).then(response => response.ok ? response.json() as Promise<Config> : null).then(value => {
-      setConfig(value);
-      const current = readConsent();
-      consentCookie(!!value?.legal_published && current?.legal_version === value.legal_version && !!current?.analytics);
-    }).catch(() => {});
     return () => window.removeEventListener("storage", storage);
   }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    fetch("/api/site/config", { cache: "no-store", signal: controller.signal }).then(async response => {
+      if (!response.ok) throw new Error("Configuration unavailable");
+      const value: Config = await response.json();
+      if (typeof value.legal_published !== "boolean" || typeof value.legal_version !== "string" || (value.legal_published && !value.legal_version)) throw new Error("Invalid configuration");
+      if (!active) return;
+      setConfig(value); setConfigError(false);
+      const current = readConsent();
+      consentCookie(value.legal_published && current?.legal_version === value.legal_version && !!current?.analytics);
+    }).catch(() => {
+      if (!active) return;
+      setConfig(null); setConfigError(true); consentCookie(false);
+    }).finally(() => {
+      clearTimeout(timeout);
+      if (active) setConfigLoading(false);
+    });
+    return () => { active = false; clearTimeout(timeout); controller.abort(); };
+  }, [configRetry]);
 
   useEffect(() => {
     const send = (message: object) => {
@@ -115,8 +135,12 @@ export default function SiteServices({ children }: { children: ReactNode }) {
       <button onClick={() => setSettingsOpen(true)}>Настройки cookie</button>
     </footer>
     {resolved && (!validConsent || settingsOpen) && <section className="cookie-banner" aria-label="Настройки cookie">
-      <div><strong>Cookie и конфиденциальность</strong><p>Необходимые cookie обеспечивают вход и безопасность. Нажимая «Принять», вы даёте Сычеву Игнату Алексеевичу <Link href="/analytics-consent">отдельное согласие на аналитику Яндекс Метрики</Link> на 180 дней. Выбор можно изменить здесь в любое время. <Link href="/cookies">О cookie</Link></p>{config && !config.legal_published && <p>Согласие на аналитику станет доступно после публикации документов.</p>}</div>
-      <div className="cookie-actions"><button className="service-button secondary" onClick={() => choose(false)}>Только необходимые</button><button className="service-button" disabled={!config?.legal_published} onClick={() => choose(true)}>Принять</button></div>
+      <div><strong>Cookie и конфиденциальность</strong><p>Необходимые cookie обеспечивают вход и безопасность. Нажимая «Принять», вы даёте Сычеву Игнату Алексеевичу <Link href="/analytics-consent">отдельное согласие на аналитику Яндекс Метрики</Link> на 180 дней. Выбор можно изменить здесь в любое время. <Link href="/cookies">О cookie</Link></p>
+        {configLoading && <p role="status">Загружаем настройки cookie…</p>}
+        {configError && <p role="status">Не удалось загрузить настройки. <button type="button" className="service-link" onClick={() => { setConfigError(false); setConfigLoading(true); setConfigRetry(value => value + 1); }}>Повторить</button></p>}
+        {config && !config.legal_published && <p>Согласие на аналитику станет доступно после публикации документов. Можно продолжить с необходимыми cookie.</p>}
+      </div>
+      <div className="cookie-actions"><button className="service-button secondary" onClick={() => choose(false)}>Только необходимые</button><button className="service-button" disabled={configLoading || !config?.legal_published} onClick={() => choose(true)}>Принять</button></div>
     </section>}
     {enabled && <iframe key={consent?.updated_at} ref={attachFrame} src="/analytics/frame" title="Аналитика" aria-hidden="true" tabIndex={-1} className="analytics-frame" referrerPolicy="no-referrer" sandbox="allow-scripts allow-same-origin" />}
   </ConsentContext.Provider>;

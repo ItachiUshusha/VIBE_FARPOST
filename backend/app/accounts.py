@@ -15,7 +15,7 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError
-from .legal import approved_documents
+from .legal import approved_documents, published_version
 
 SESSION_COOKIE = "fp_session"
 CSRF_COOKIE = "fp_csrf"
@@ -173,8 +173,10 @@ def registrations_allowed(request):
 
 
 def check_terms(request, version):
-    if approved_documents(settings(request)) and version != settings(request).legal_version:
+    current = published_version(settings(request))
+    if current and version != current:
         raise HTTPException(409, "Условия обновились. Обновите страницу и подтвердите текущую редакцию.")
+    return current
 
 
 class Register(BaseModel):
@@ -205,6 +207,7 @@ class Login(BaseModel):
 @router.get("/api/site/config")
 def site_config(request: Request):
     cfg = settings(request)
+    documents = approved_documents(cfg)
     try:
         raw = json.loads(cfg.analytics_utm_allowlist)
         allowlist = {key: [value for value in raw.get(key, []) if isinstance(value, str) and re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,39}", value)]
@@ -213,7 +216,7 @@ def site_config(request: Request):
         allowlist = {}
     return {"providers": {"yandex": bool(cfg.yandex_client_id and cfg.yandex_client_secret.get_secret_value()), "vk": bool(cfg.vk_client_id)},
             "metrica_counter_id": cfg.metrica_counter_id if cfg.metrica_counter_id.isdigit() else "", "utm_allowlist": allowlist,
-            "legal_published": bool(approved_documents(cfg)), "legal_version": cfg.legal_version,
+            "legal_published": bool(documents), "legal_version": documents["version"] if documents else "",
             "local": urlsplit(cfg.public_origin).hostname in {"localhost", "127.0.0.1", "::1"}}
 
 
@@ -227,7 +230,7 @@ def csrf_token(request: Request, response: Response):
 @router.post("/api/auth/register", dependencies=[Depends(csrf)])
 def register(payload: Register, request: Request, response: Response):
     registrations_allowed(request)
-    check_terms(request, payload.terms_version)
+    accepted_version = check_terms(request, payload.terms_version)
     if not payload.accept_terms:
         raise HTTPException(422, "Подтвердите создание аккаунта и условия сервиса")
     db = database(request)
@@ -235,7 +238,7 @@ def register(payload: Register, request: Request, response: Response):
     limit(request, "register:" + username)
     user = {"_id": str(uuid4()), "username": username, "display_name": payload.username, "password_hash": password_hash(payload.password),
             "role": "user", "status": "active", "version": 1, "registration_method": "local", "created_at": stamp(),
-            "terms_version": settings(request).legal_version or "local-draft", "terms_accepted_at": stamp()}
+            "terms_version": accepted_version or "local-draft", "terms_accepted_at": stamp()}
     if payload.email:
         user["email"] = payload.email
     try:
@@ -294,15 +297,14 @@ def oauth_start(provider: str, request: Request, intent: str = "login", accept_t
     user = require_recent(request) if intent == "link" else None
     if intent == "login" and not accept_terms:
         raise HTTPException(422, "Перед входом подтвердите условия создания аккаунта")
-    if intent == "login":
-        check_terms(request, terms_version)
+    accepted_version = check_terms(request, terms_version) if intent == "login" else published_version(cfg)
     browser = secrets.token_urlsafe(32)
     state = secrets.token_urlsafe(48)
     verifier = secrets.token_urlsafe(48)
     challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
     redirect_uri = cfg.public_origin + f"/api/auth/oauth/{provider}/callback"
     database(request).oauth_flows.insert_one({"_id": digest(state), "provider": provider, "browser": digest(browser), "verifier": verifier,
-        "expires_at": now() + timedelta(minutes=10), "redirect_uri": redirect_uri, "intent": intent, "user_id": user["_id"] if user else None, "terms_version": cfg.legal_version})
+        "expires_at": now() + timedelta(minutes=10), "redirect_uri": redirect_uri, "intent": intent, "user_id": user["_id"] if user else None, "terms_version": accepted_version})
     params = {"response_type": "code", "client_id": cfg.yandex_client_id if provider == "yandex" else cfg.vk_client_id,
               "redirect_uri": redirect_uri, "state": state, "code_challenge": challenge,
               "code_challenge_method": "S256" if provider == "yandex" else "s256", "scope": "login:info" if provider == "yandex" else "vkid.personal_info"}
@@ -354,10 +356,10 @@ def provider_user(request, profile, terms_version):
             raise HTTPException(503, "Аккаунт временно недоступен")
         return user, False
     registrations_allowed(request)
-    check_terms(request, terms_version)
+    accepted_version = check_terms(request, terms_version)
     user_id = "oauth_" + digest(provider + ":" + profile["subject"])
     user = {"_id": user_id, "display_name": profile["display_name"], "role": "user", "status": "active", "version": 1,
-            "registration_method": provider, "created_at": stamp(), "terms_version": settings(request).legal_version or "local-draft", "terms_accepted_at": stamp()}
+            "registration_method": provider, "created_at": stamp(), "terms_version": accepted_version or "local-draft", "terms_accepted_at": stamp()}
     result = db.users.update_one({"_id": user_id}, {"$setOnInsert": user}, upsert=True)
     registered = bool(result.upserted_id)
     try:

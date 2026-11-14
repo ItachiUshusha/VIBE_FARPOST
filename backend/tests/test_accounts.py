@@ -29,7 +29,8 @@ def test_origin_normalization_and_https_requirement():
 @pytest.fixture
 def app_db():
     db = mongomock.MongoClient().accounts_test
-    cfg = Settings(yandex_client_id="yandex-test", yandex_client_secret="server-secret", vk_client_id="12345")
+    cfg = Settings(yandex_client_id="yandex-test", yandex_client_secret="server-secret", vk_client_id="12345",
+                   legal_publication_mode="manual", legal_published=False, legal_version="")
     app = create_app(cfg, db)
     with TestClient(app, base_url="http://localhost:3000", follow_redirects=False) as client:
         yield app, db, client
@@ -271,6 +272,54 @@ def test_legal_gating_configuration_and_cross_origin(app_db, tmp_path, monkeypat
     created = post(secure_client, "/api/auth/register", {"username": "secure-user", "password": "secure-password-123", "accept_terms": True, "terms_version": "v1"})
     assert created.status_code == 200
     assert all(value in created.headers["set-cookie"].lower() for value in ["httponly", "secure", "samesite=lax"])
+
+
+def test_approved_release_publishes_with_legacy_disabled_settings(app_db, tmp_path, monkeypatch):
+    app, db, client = app_db
+    cfg = app.state.settings
+    cfg.legal_publication_mode = "auto"
+    cfg.public_origin = "https://service.example"
+    path = tmp_path / "release.json"
+    bundle = {"version": "release-v2", "approved_at": accounts.stamp(),
+              "operator": {"name": "Operator", "contact": "contact@example.test", "jurisdiction": "RU"},
+              "documents": {key: "Reviewed release text " * 20 for key in legal.TITLES}}
+    path.write_text(json.dumps(bundle))
+    monkeypatch.setattr(legal, "APPROVAL_PATH", path)
+    assert cfg.legal_published is False and cfg.legal_version == ""
+    assert client.get("/api/site/config").json()["legal_version"] == "release-v2"
+    assert client.get("/api/site/config").json()["legal_published"] is True
+    for slug, text in bundle["documents"].items():
+        response = client.get("/api/legal/" + slug).json()
+        assert response["published"] is True and response["text"] == text
+    secure_client = TestClient(app, base_url="https://service.example", follow_redirects=False)
+    data = {"username": "release-user", "password": "secure-password-123", "accept_terms": True}
+    assert post(secure_client, "/api/auth/register", {**data, "terms_version": "old"}).status_code == 409
+    response = post(secure_client, "/api/auth/register", {**data, "terms_version": "release-v2"})
+    assert response.status_code == 200
+    assert db.users.find_one({"username": "release-user"})["terms_version"] == "release-v2"
+    cfg.legal_publication_mode = "disabled"
+    assert client.get("/api/site/config").json()["legal_published"] is False
+    assert client.get("/api/site/config").json()["legal_version"] == ""
+    assert client.get("/api/legal/privacy").json()["published"] is False
+    assert post(secure_client, "/api/auth/register", {**data, "username": "closed-user"}).status_code == 503
+
+
+@pytest.mark.parametrize("missing", ["approved_at", "operator", "version", "privacy"])
+def test_auto_publication_does_not_serve_unapproved_or_incomplete_bundle(app_db, tmp_path, monkeypatch, missing):
+    app, _, client = app_db
+    app.state.settings.legal_publication_mode = "auto"
+    path = tmp_path / "incomplete.json"
+    bundle = {"version": "release-v2", "approved_at": accounts.stamp(),
+              "operator": {"name": "Operator", "contact": "contact@example.test", "jurisdiction": "RU"},
+              "documents": {key: "Reviewed text " * 20 for key in legal.TITLES}}
+    if missing == "privacy":
+        del bundle["documents"][missing]
+    else:
+        del bundle[missing]
+    path.write_text(json.dumps(bundle))
+    monkeypatch.setattr(legal, "APPROVAL_PATH", path)
+    assert client.get("/api/legal/privacy").json()["published"] is False
+    assert client.get("/api/site/config").json()["legal_published"] is False
 
 
 @pytest.mark.parametrize("provider", ["yandex", "vk"])

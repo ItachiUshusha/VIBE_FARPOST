@@ -16,6 +16,7 @@ services:
     env_file: .env
     environment:
       MONGODB_URI: mongodb://mongo:27017
+      LEGAL_PUBLICATION_MODE: ${LEGAL_PUBLICATION_MODE:-auto}
       MONGODB_DATABASE: ${MONGODB_DATABASE:-farpost_butterfly}
       DATASET_VERSION: pervaya-rechka-v1
       AUTO_SEED: "true"

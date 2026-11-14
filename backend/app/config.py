@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -26,6 +27,7 @@ class Settings(BaseSettings):
     metrica_login_goal_id: str = ""
     metrica_simulation_goal_id: str = ""
     analytics_utm_allowlist: str = '{"utm_source":["yandex","vk","google"],"utm_medium":["cpc","organic","social"],"utm_campaign":[]}'
+    legal_publication_mode: Literal["auto", "manual", "disabled"] = "auto"
     legal_published: bool = False
     legal_version: str = ""
     report_timezone: str = "Asia/Vladivostok"

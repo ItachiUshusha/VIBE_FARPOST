@@ -15,6 +15,7 @@ services:
     env_file: .env
     environment:
       MONGODB_URI: mongodb://mongo:27017
+      LEGAL_PUBLICATION_MODE: ${LEGAL_PUBLICATION_MODE:-auto}
       PUBLIC_ORIGIN: https://${SITE_DOMAIN:?Set SITE_DOMAIN in .env}
       CORS_ORIGINS: https://${SITE_DOMAIN:?Set SITE_DOMAIN in .env}
     restart: unless-stopped

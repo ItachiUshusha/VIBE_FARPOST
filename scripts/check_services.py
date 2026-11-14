@@ -44,7 +44,7 @@ def main():
     logs.mkdir(parents=True, exist_ok=True)
     env = {**os.environ, "PYTHONPATH": str(ROOT / "backend"), "MONGODB_DATABASE": database, "MONGODB_URI": "mongodb://127.0.0.1:27017",
            "PUBLIC_ORIGIN": base, "CORS_ORIGINS": base, "METRICA_COUNTER_ID": "12345678", "METRICA_READ_TOKEN": "", "YANDEX_CLIENT_ID": "", "YANDEX_CLIENT_SECRET": "",
-           "VK_CLIENT_ID": "", "LEGAL_PUBLISHED": "false", "LEGAL_VERSION": "", "SEO_INDEXING_ENABLED": "true", "NEXT_TELEMETRY_DISABLED": "1"}
+           "VK_CLIENT_ID": "", "LEGAL_PUBLICATION_MODE": "manual", "LEGAL_PUBLISHED": "false", "LEGAL_VERSION": "", "SEO_INDEXING_ENABLED": "true", "NEXT_TELEMETRY_DISABLED": "1"}
     password = secrets.token_urlsafe(32)
     python = str(ROOT / ".venv/bin/python")
     node = str(ROOT / ".local/runtime/node/bin/node")
