@@ -157,7 +157,8 @@ export default function RoadMap(props: Props) {
   const [painted, setPainted] = useState(false);
   const [scheme, setScheme] = useState(true);
   const [pitched, setPitched] = useState(false);
-  const [playing, setPlaying] = useState(true);
+  const [playing, setPlaying] = useState(false);
+  const [economy, setEconomy] = useState(true);
   const [showLayers, setShowLayers] = useState(false);
   const [showFlow, setShowFlow] = useState(true);
   const [showBuildings, setShowBuildings] = useState(true);
@@ -205,7 +206,7 @@ export default function RoadMap(props: Props) {
     try {
       instance = new maplibregl.Map({ container: container.current, style: themedMapStyle(propsRef.current.dark), center: propsRef.current.data.center,
         zoom: 14.8, pitch: 0, bearing: 0, maxPitch: 60, minZoom: 12, maxZoom: 19,
-        attributionControl: { compact: true }, canvasContextAttributes: { antialias: true },
+        attributionControl: { compact: true }, pixelRatio: 1, canvasContextAttributes: { antialias: false },
       });
     } catch {
       setMapError(true);
@@ -276,6 +277,11 @@ export default function RoadMap(props: Props) {
       for (const [property, value] of Object.entries(layer.paint || {})) map.current.setPaintProperty(layer.id, property, value);
     }
   }, [ready, props.dark]);
+  useEffect(() => {
+    if (!ready || !map.current) return;
+    map.current.setPixelRatio(economy ? 1 : Math.min(window.devicePixelRatio || 1, 2));
+    for (const id of ["road-glow", "cars-glow"]) map.current.setLayoutProperty(id, "visibility", economy ? "none" : "visible");
+  }, [ready, economy]);
   useEffect(() => { if (props.reducedMotion) setPlaying(false); }, [props.reducedMotion]);
 
   useEffect(() => {
@@ -300,10 +306,16 @@ export default function RoadMap(props: Props) {
   useEffect(() => {
     if (!ready || !map.current) return;
     (map.current.getSource("parkings") as GeoJSONSource).setData(parkingFeatures);
+  }, [ready, parkingFeatures]);
+  useEffect(() => {
+    if (!ready || !map.current) return;
     (map.current.getSource("houses") as GeoJSONSource).setData(houseFeatures);
+  }, [ready, houseFeatures]);
+  useEffect(() => {
+    if (!ready || !map.current) return;
     (map.current.getSource("personal") as GeoJSONSource).setData(props.personal?.car_route ? { type: "FeatureCollection", features: [props.personal.car_route] } : EMPTY);
     (map.current.getSource("walking") as GeoJSONSource).setData(props.personal?.walk_route ? { type: "FeatureCollection", features: [props.personal.walk_route] } : EMPTY);
-  }, [ready, parkingFeatures, houseFeatures, props.personal]);
+  }, [ready, props.personal]);
   useEffect(() => {
     if (!ready || !map.current) return;
     const parking = props.experiment.showParkings
@@ -401,40 +413,56 @@ export default function RoadMap(props: Props) {
     setPitched(false);
   }, [ready, props.resetKey]);
 
-  // Each visual marker follows arc length on a calculated route. It never changes model metrics.
+  // Visual markers do not affect the model. Wait for the worker before scheduling another update.
   useEffect(() => {
     if (!ready || !map.current) return;
-    if (!playing || props.reducedMotion) { (map.current.getSource("cars") as GeoJSONSource)?.setData(EMPTY); return; }
-    const prepared = props.state.routes.features.map((f, i) => {
-      const coords = f.geometry.coordinates;
+    const instance = map.current;
+    const source = instance.getSource("cars") as GeoJSONSource;
+    if (!playing || props.reducedMotion) { source.setData(EMPTY); return; }
+    const prepared = props.state.routes.features.map((feature, index) => {
+      const coords = feature.geometry.coordinates;
       const cumulative = [0];
-      for (let j = 1; j < coords.length; j++) cumulative.push(cumulative[j - 1] + Math.hypot((coords[j][0] - coords[j - 1][0]) * 0.73, coords[j][1] - coords[j - 1][1]));
-      return { coords, cumulative, total: cumulative[cumulative.length - 1], offset: i * 0.081, markers: Math.min(24, Math.max(1, Math.round(f.properties.vehicle_count / 15))), duration: Math.max(f.properties.time_s * 50, 10000) };
-    });
-    let id = 0;
-    let previous = 0;
-    const tick = (now: number) => {
-      if (document.hidden) { id = 0; return; }
-      if (now - previous > 45 && map.current) {
-        previous = now;
-        const features = prepared.flatMap(route => Array.from({ length: route.markers }, (_, i) => i / route.markers).map(offset => {
-          const target = ((now / route.duration + route.offset + offset) % 1) * route.total;
-          let i = 1;
-          while (i < route.cumulative.length - 1 && route.cumulative[i] < target) i++;
-          const span = route.cumulative[i] - route.cumulative[i - 1];
-          const t = span ? (target - route.cumulative[i - 1]) / span : 0;
-          const a = route.coords[i - 1], b = route.coords[i];
-          return { type: "Feature" as const, geometry: { type: "Point" as const, coordinates: [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t] }, properties: {} };
-        }));
-        (map.current.getSource("cars") as GeoJSONSource)?.setData({ type: "FeatureCollection", features });
-      }
-      id = requestAnimationFrame(tick);
+      for (let j = 1; j < coords.length; j++) cumulative.push(cumulative[j - 1] + Math.hypot((coords[j][0] - coords[j - 1][0]) * .73, coords[j][1] - coords[j - 1][1]));
+      return { coords, cumulative, total: cumulative[cumulative.length - 1], offset: index * .081,
+        markers: Math.min(economy ? 4 : 12, Math.max(1, Math.round(feature.properties.vehicle_count / 15))),
+        duration: Math.max(feature.properties.time_s * 50, 10000) };
+    }).filter(route => route.total > 0);
+    const markers = prepared.flatMap(route => Array.from({ length: route.markers }, (_, index) => ({ route, offset: index / route.markers,
+      feature: { type: "Feature" as const, geometry: { type: "Point" as const, coordinates: [0, 0] }, properties: {} } })));
+    const frameData: FeatureCollection<Point> = { type: "FeatureCollection", features: markers.map(marker => marker.feature) };
+    let stopped = false;
+    let pending = false;
+    let timer = 0;
+    let frame = 0;
+    const schedule = () => {
+      if (stopped || document.hidden) return;
+      timer = window.setTimeout(() => { frame = requestAnimationFrame(tick); }, economy ? 100 : 50);
     };
-    id = requestAnimationFrame(tick);
-    const resume = () => { if (!document.hidden && !id) id = requestAnimationFrame(tick); };
-    document.addEventListener("visibilitychange", resume);
-    return () => { cancelAnimationFrame(id); document.removeEventListener("visibilitychange", resume); };
-  }, [ready, playing, props.state, props.reducedMotion]);
+    const tick = (now: number) => {
+      frame = 0;
+      if (stopped || document.hidden) return;
+      if (instance.isMoving() || propsRef.current.disabled || !source.loaded()) { schedule(); return; }
+      for (const { route, offset, feature } of markers) {
+        const target = ((now / route.duration + route.offset + offset) % 1) * route.total;
+        let lo = 1, hi = route.cumulative.length - 1;
+        while (lo < hi) { const mid = (lo + hi) >>> 1; if (route.cumulative[mid] < target) lo = mid + 1; else hi = mid; }
+        const span = route.cumulative[lo] - route.cumulative[lo - 1];
+        const t = span ? (target - route.cumulative[lo - 1]) / span : 0;
+        const a = route.coords[lo - 1], b = route.coords[lo];
+        feature.geometry.coordinates[0] = a[0] + (b[0] - a[0]) * t;
+        feature.geometry.coordinates[1] = a[1] + (b[1] - a[1]) * t;
+      }
+      pending = true;
+      void source.setData(frameData, true).catch(() => {}).finally(() => { pending = false; schedule(); });
+    };
+    const visibility = () => {
+      clearTimeout(timer); cancelAnimationFrame(frame);
+      if (!document.hidden && !pending) schedule();
+    };
+    schedule();
+    document.addEventListener("visibilitychange", visibility);
+    return () => { stopped = true; clearTimeout(timer); cancelAnimationFrame(frame); document.removeEventListener("visibilitychange", visibility); };
+  }, [ready, playing, props.state, props.reducedMotion, economy]);
 
   const resetView = () => { map.current?.easeTo({ center: props.data.center, zoom: 14.8, pitch: 0, bearing: 0, padding: 0, duration: props.reducedMotion ? 0 : 350 }); setPitched(false); };
 
@@ -462,7 +490,8 @@ export default function RoadMap(props: Props) {
         <label><input type="checkbox" checked={showFlow} onChange={e => setShowFlow(e.target.checked)} />Нагрузка на дороги</label>
         <label><input type="checkbox" checked={showBuildings} onChange={e => { setShowBuildings(e.target.checked); map.current?.setLayoutProperty("buildings", "visibility", e.target.checked ? "visible" : "none"); }} />Здания и кварталы</label>
         <label><input type="checkbox" checked={!scheme} onChange={e => { setScheme(!e.target.checked); map.current?.setLayoutProperty("basemap", "visibility", e.target.checked ? "visible" : "none"); }} />Подложка OpenStreetMap</label>
-        <small>Схема работает без интернета</small>
+        <label><input type="checkbox" checked={economy} onChange={event => setEconomy(event.target.checked)} />Экономить ресурсы</label>
+        <small>Экономный режим уменьшает детализацию и частоту анимации. Схема работает без интернета.</small>
       </div>}
       <div className="map-compass" aria-hidden="true"><span>С</span><i /></div>
       {hover && !props.disabled && <div className="map-tooltip" style={{ left: (container.current?.offsetLeft || 0) + Math.min(hover.x + 16, (container.current?.clientWidth || 800) - 235), top: Math.max(hover.y - 60, 70) }}><strong>{hover.name}</strong><span>{hover.direction}</span></div>}

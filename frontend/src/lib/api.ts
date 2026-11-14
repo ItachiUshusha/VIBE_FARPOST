@@ -23,7 +23,15 @@ export async function api<T>(path: string, body?: unknown, signal?: AbortSignal)
   return response.json();
 }
 
-export const number = (n: number, digits = 0) => new Intl.NumberFormat("ru-RU", { maximumFractionDigits: digits }).format(n);
+const numberFormatters = new Map<number, Intl.NumberFormat>();
+export const number = (n: number, digits = 0) => {
+  let formatter = numberFormatters.get(digits);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: digits });
+    numberFormatters.set(digits, formatter);
+  }
+  return formatter.format(n);
+};
 export const shortTime = (s: number | null) => s === null ? "—" : s < 60 ? `${number(s)} с` : s < 3600 ? `${number(Math.ceil(s / 60))} мин` : `${number(Math.floor(s / 3600))} ч ${number(Math.floor(s % 3600 / 60))} мин`;
 export const time = (s: number | null) => {
   if (s === null) return "—";

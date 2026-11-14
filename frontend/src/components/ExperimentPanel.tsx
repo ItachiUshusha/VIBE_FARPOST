@@ -1,7 +1,8 @@
 "use client";
 
 import { ArrowDown, ArrowUp, Car, Check, ChevronDown, CloudRain, House, MapPin, Navigation, Plus, Route, Snowflake, Sun, Trash2, Users, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import ParkingSettings from "./ParkingSettings";
 import { distance, number } from "@/lib/api";
 import { plural, roadLength } from "@/lib/roads";
 import type { Catalogs, Experiment, Placement, Weather } from "@/lib/types";
@@ -21,10 +22,8 @@ type Props = {
 
 export default function ExperimentPanel({ catalogs, value: exp, onChange, placement, onPlace, onEditHouse, onStartRoad, onEditRoad, disabled, part }: Props) {
   const config = catalogs.config;
-  const [parkingSearch, setParkingSearch] = useState("");
-  const [parkingLimit, setParkingLimit] = useState(30);
-  const normalizedSearch = parkingSearch.trim().toLocaleLowerCase("ru");
   const manualParkings = useMemo(() => {
+    if (part === "traffic") return [];
     const end = exp.points.at(-1);
     const ranked = catalogs.parkings.map(p => ({ parking: p, gap: end ? Math.hypot((p.coordinates[0] - end.lon) * 111195 * Math.cos(end.lat * Math.PI / 180), (p.coordinates[1] - end.lat) * 111195) : 0 }));
     if (end) ranked.sort((a, b) => a.gap - b.gap || a.parking.parking_id.localeCompare(b.parking.parking_id));
@@ -33,8 +32,7 @@ export default function ExperimentPanel({ catalogs, value: exp, onChange, placem
     const selected = catalogs.parkings.find(p => p.parking_id === exp.parkingId);
     if (selected && !options.some(p => p.parking_id === selected.parking_id)) options.unshift(selected);
     return options;
-  }, [catalogs.parkings, exp.points, exp.parkingId, config.parking_radius_m]);
-  const filteredParkings = catalogs.parkings.filter(p => !normalizedSearch || `${p.name} ${p.source_id}`.toLocaleLowerCase("ru").includes(normalizedSearch));
+  }, [catalogs.parkings, exp.points, exp.parkingId, config.parking_radius_m, part]);
   const countValid = Number.isInteger(exp.vehicleCount) && exp.vehicleCount >= config.min_vehicle_count && exp.vehicleCount <= config.max_vehicle_count;
   const setPoints = (points: Experiment["points"]) => { onChange({ points }); onPlace(null); };
   const movePoint = (index: number, direction: number) => {
@@ -69,7 +67,7 @@ export default function ExperimentPanel({ catalogs, value: exp, onChange, placem
       </div>
     </details>
 
-    <details className="scenario-accordion parking-editor"><summary><span className="parking-letter">P</span><span>Парковки<small>{number(catalogs.parkings.length)} объектов OpenStreetMap</small></span><ChevronDown size={14} /></summary><div className="accordion-body"><label className="check-label"><input type="checkbox" checked={exp.showParkings} onChange={e => onChange({ showParkings: e.target.checked })} />Показать парковки на карте</label><input className="parking-search" type="search" aria-label="Найти парковку" placeholder="Найти по названию или улице" value={parkingSearch} onChange={e => { setParkingSearch(e.target.value); setParkingLimit(30); }} /><p className="field-hint">Парковки из OpenStreetMap. Занятость можно изменить для сценария. Безымянные объекты подписаны по ближайшей улице.</p><div className="parking-settings">{filteredParkings.slice(0, parkingLimit).map(p => <div className="parking-setting" key={p.parking_id}><div><strong>{p.name}</strong><small>{p.capacity ? `${p.capacity} мест по OSM` : "Вместимость в OSM не задана"}{p.source_tags?.access === "customers" ? " · для клиентов" : ""}</small>{p.source_url && <a className="parking-source-link" href={p.source_url} target="_blank" rel="noreferrer">Объект на OpenStreetMap ↗</a>}</div><div className="occupancy-controls"><label><span className="sr-only">{`Занятость ${p.name}`}</span><input type="number" min="0" max="100" step="1" value={exp.occupancy[p.parking_id] ?? p.baseline_occupancy_percent} disabled={disabled} onChange={e => { const n = Number(e.target.value); if (Number.isFinite(n)) onChange({ occupancy: { ...exp.occupancy, [p.parking_id]: Math.max(0, Math.min(100, n)) } }); }} />%</label><button disabled={disabled} onClick={() => onChange({ occupancy: { ...exp.occupancy, [p.parking_id]: 50 } })}>50%</button><button disabled={disabled} onClick={() => onChange({ occupancy: { ...exp.occupancy, [p.parking_id]: 75 } })}>75%</button><button disabled={disabled} aria-label={`Заполнить парковку ${p.name}`} onClick={() => onChange({ occupancy: { ...exp.occupancy, [p.parking_id]: 100 } })}>100%</button></div>{exp.occupancy[p.parking_id] === 100 && <span className="full-parking-label">Мест нет</span>}</div>)}</div>{!filteredParkings.length && <p className="field-hint">По этому запросу парковок нет.</p>}{filteredParkings.length > parkingLimit && <button className="quiet-action" onClick={() => setParkingLimit(n => n + 30)}>Показать ещё · осталось {number(filteredParkings.length - parkingLimit)}</button>}</div></details>
+    <ParkingSettings parkings={catalogs.parkings} occupancy={exp.occupancy} showParkings={exp.showParkings} disabled={disabled} onChange={onChange} />
 
     <details className="scenario-accordion roads-editor" open={exp.addedRoads.length > 0 || undefined}><summary><Route size={16} /><span>Свои дороги<small>{exp.addedRoads.length ? `${exp.addedRoads.length} добавлено в сценарий` : "Соедините улицы и сравните время поездки"}</small></span><ChevronDown size={14} /></summary><div className="accordion-body">{exp.addedRoads.map(road => <div className="house-card custom-road-card" key={road.road_id}><Route size={16} /><button className="house-card-edit" disabled={disabled} onClick={() => onEditRoad(road.road_id)}><strong>{road.name || "Новая дорога"}</strong><small>{distance(roadLength(road.points))} · {Number.isFinite(road.lanes) ? `${road.lanes} ${plural(road.lanes, ["полоса", "полосы", "полос"])} ${road.two_way ? "в каждую сторону" : "в одну сторону"}` : "Укажите число полос"} · {road.speed_kmh} км/ч</small></button><button className="icon-button" aria-label={`Убрать дорогу ${road.name}`} disabled={disabled} onClick={() => onChange({ addedRoads: exp.addedRoads.filter(item => item.road_id !== road.road_id) })}><X size={15} /></button></div>)}<button className="quiet-action" disabled={disabled || exp.addedRoads.length >= 5} onClick={onStartRoad}><Plus size={14} />Нарисовать дорогу на карте</button><p className="field-hint">Поставьте начало, добавьте повороты и конец, затем нажмите «Готово». Начало и конец соединяются с ближайшими перекрёстками в пределах {config.snap_radius_m} м. Дорога начнёт работать в сценарии «После». Можно добавить до пяти дорог.</p></div></details>
     <details className="scenario-accordion housing-editor" open={exp.addedHouses.length > 0 || exp.removedHouses.length > 0 || undefined}><summary><House size={16} /><span>Жилые дома<small>1 житель = 1 машина</small></span><ChevronDown size={14} /></summary><div className="accordion-body"><label className="check-label"><input type="checkbox" checked={exp.showHouses} onChange={e => onChange({ showHouses: e.target.checked })} />Показать дома, учтённые в расчёте</label>

@@ -1,0 +1,19 @@
+.viewport {
+  height: min(390px, 50svh);
+  position: relative;
+  overflow-anchor: none;
+  contain: layout paint;
+}
+
+.space {
+  position: relative;
+  width: 100%;
+}
+
+.row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+}

@@ -33,7 +33,7 @@ export async function runRegression() {
     await reset(page); await openScenario(page);
     assert.equal(await page.getByRole("button", { name: "После изменения", exact: true }).isDisabled(), true); check("Сброс возвращает исходное состояние");
     await openDetails(page, ".parking-editor"); await page.getByLabel("Показать парковки на карте", { exact: true }).uncheck();
-    await openDetails(page, ".housing-editor"); await page.getByLabel("Показать моделируемые дома", { exact: true }).uncheck();
+    await openDetails(page, ".housing-editor"); await page.getByLabel("Показать дома, учтённые в расчёте", { exact: true }).uncheck();
     const road = mapData.edges.features.filter(f => f.properties.can_close && f.properties.name === "Океанский проспект").map(f => ({ f, point: f.geometry.coordinates[Math.floor(f.geometry.coordinates.length / 2)] })).sort((a, b) => Math.hypot(a.point[0] - mapData.center[0], a.point[1] - mapData.center[1]) - Math.hypot(b.point[0] - mapData.center[0], b.point[1] - mapData.center[1]))[0];
     await clickMap(page, mapData, road.point); await page.locator(".selected-road").waitFor(); check("Выбор реальной дороги на карте открывает её параметры");
     await page.getByRole("button", { name: "Сужение", exact: true }).click();
