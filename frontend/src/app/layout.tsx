@@ -15,7 +15,7 @@ export const viewport: Viewport = {
 };
 export function generateMetadata(): Metadata { return {
   metadataBase: new URL(publicOrigin()),
-  title: "402x402 — Первая Речка",
+  title: "402x402",
   description: "Одно перекрытие меняет весь район. Исследуйте дорожные сценарии Первой Речки во Владивостоке.",
   icons: { icon: "/icon.svg" },
   robots: { index: indexingEnabled(), follow: indexingEnabled() },

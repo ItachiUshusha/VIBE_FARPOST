@@ -135,7 +135,7 @@ export default function SiteServices({ children }: { children: ReactNode }) {
       <button onClick={() => setSettingsOpen(true)}>Настройки cookie</button>
     </footer>
     {resolved && (!validConsent || settingsOpen) && <section className="cookie-banner" aria-label="Настройки cookie">
-      <div><strong>Cookie и конфиденциальность</strong><p>Необходимые cookie обеспечивают вход и безопасность. Нажимая «Принять», вы даёте Сычеву Игнату Алексеевичу <Link href="/analytics-consent">отдельное согласие на аналитику Яндекс Метрики</Link> на 180 дней. Выбор можно изменить здесь в любое время. <Link href="/cookies">О cookie</Link></p>
+      <div><strong>Cookie и конфиденциальность</strong><p>Необходимые cookie обеспечивают вход и безопасность. Нажимая «Принять», вы даёте Игнату Алексеевичу <Link href="/analytics-consent">отдельное согласие на аналитику Яндекс Метрики</Link> на 180 дней. Выбор можно изменить здесь в любое время. <Link href="/cookies">О cookie</Link></p>
         {configLoading && <p role="status">Загружаем настройки cookie…</p>}
         {configError && <p role="status">Не удалось загрузить настройки. <button type="button" className="service-link" onClick={() => { setConfigError(false); setConfigLoading(true); setConfigRetry(value => value + 1); }}>Повторить</button></p>}
         {config && !config.legal_published && <p>Согласие на аналитику станет доступно после публикации документов. Можно продолжить с необходимыми cookie.</p>}
