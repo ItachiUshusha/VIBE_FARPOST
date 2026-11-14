@@ -38,7 +38,7 @@ export default function AccountClient({ user }: { user: User }) {
   }, [consent.resolved, consent.analytics]);
   const act = async (callback: () => Promise<void>) => { setBusy(true); setError(""); try { await callback(); } catch (failure) { setError(failure instanceof Error ? failure.message : "Действие не выполнено"); } finally { setBusy(false); } };
   return <div className="service-page"><main className="account-layout">
-    <header className="service-topbar"><Link href="/" className="service-brand">↗ Эффект бабочки</Link><button className="service-button secondary" disabled={busy} onClick={() => act(async () => { await accountApi("/auth/logout", "POST"); router.replace("/"); router.refresh(); })}>Выйти</button></header>
+    <header className="service-topbar"><Link href="/" className="service-brand">↗ 402x402</Link><button className="service-button secondary" disabled={busy} onClick={() => act(async () => { await accountApi("/auth/logout", "POST"); router.replace("/"); router.refresh(); })}>Выйти</button></header>
     <span className="service-eyebrow">Личный кабинет</span><h1>{user.display_name}</h1><p className="service-muted">Ваши расчёты и способы входа</p>
     {user.role === "admin" && <Link className="service-button admin-entry" href="/admin">Открыть администрирование →</Link>}
     {error && <div className="service-error" role="alert">{error} <button onClick={() => { setError(""); setRetry(value => value + 1); }}>Повторить</button></div>}

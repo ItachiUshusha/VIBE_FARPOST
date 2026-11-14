@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { serverIdentity } from "@/lib/server-config";
 import AdminClient from "@/components/AdminClient";
-export const metadata = { title: "Администрирование — Эффект бабочки", robots: { index: false, follow: false } };
+export const metadata = { title: "Администрирование — 402x402", robots: { index: false, follow: false } };
 export default async function AdminPage({ params }: { params: Promise<{ path?: string[] }> }) {
   const user = await serverIdentity(true);
   if (!user) return <div className="service-page"><main className="auth-card"><h1>Доступ запрещён</h1><p>Этот раздел доступен только администратору.</p><Link href="/account">Вернуться в кабинет</Link></main></div>;

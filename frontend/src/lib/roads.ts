@@ -38,7 +38,7 @@ export function nearestJunction(data: MapData, point: Coordinate, radius: number
   for (const junction of junctions) {
     const candidate = { lon: junction.coordinates[0], lat: junction.coordinates[1] };
     const distance = metresBetween(point, candidate);
-    if (distance <= radius && (!nearest || distance < nearest.distance)) nearest = { point: candidate, distance, nodeId: junction.node_id };
+    if (distance <= radius && (!nearest || distance < nearest.distance || distance === nearest.distance && junction.node_id < nearest.nodeId)) nearest = { point: candidate, distance, nodeId: junction.node_id };
   }
   return nearest;
 }

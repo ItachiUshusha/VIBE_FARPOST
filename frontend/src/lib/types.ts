@@ -40,6 +40,7 @@ export type MapData = {
   edges: FeatureCollection<LineString, RoadProperties>;
   segments: Segment[];
   junctions?: { node_id: string; coordinates: [number, number] }[];
+  snap_nodes?: { node_id: string; coordinates: [number, number]; incoming: boolean; outgoing: boolean }[];
   model: { alpha: number; beta: number; elevated_threshold: number; high_threshold: number };
   traffic: ScenarioConfig;
 };
@@ -112,6 +113,8 @@ export type Run = {
 };
 
 export type Coordinate = { lon: number; lat: number };
+export type PointTarget = { kind: "route"; index: number } | { kind: "house"; houseId: string } | { kind: "road"; roadId: string; index: number };
+export type PointGuidance = { from: Coordinate; to: Coordinate; target: PointTarget; label: string; message: string; distance_m: number };
 export type Weather = "dry" | "rain" | "snow";
 export type ParkingMode = "none" | "auto" | "manual";
 export type ScenarioConfig = {
@@ -129,9 +132,11 @@ export type Parking = {
 export type ModelHouse = {
   house_id: string; name: string; coordinates: [number, number]; exit_node_id: string;
   residents: number; origin_trip_id?: string; source: string; source_id?: string;
-  geometry?: Polygon; vehicle_count?: number; terminal_id?: string;
+  geometry?: Polygon; vehicle_count?: number;
+  distribution_mode?: "all_directions"; destination_count?: number;
+  distribution?: { terminal_id: string; label: string; node_id: string; vehicle_count: number; share: number; trip_id: string }[];
 };
-export type HouseDraft = { house_id: string; coordinates: Coordinate; residents: number; terminal_id: string };
+export type HouseDraft = { house_id: string; coordinates: Coordinate; residents: number };
 export type RoadDraft = { road_id: string; name: string; points: Coordinate[]; lanes: number; speed_kmh: number; two_way: boolean };
 export type ScenarioRoad = RoadDraft & { length_m: number; edge_ids: string[]; segment_id: string; geometry: LineString; connections: { start: Snap; end: Snap } };
 export type Catalogs = {
@@ -164,7 +169,7 @@ export type PersonalPhase = {
 export type PersonalComparison = {
   before: PersonalPhase; after: PersonalPhase; comparison: Delta; vehicle_count: number;
   comparison_note?: string | null;
-  snapped_points: { origin: Snap; via: Snap[]; destination: Snap | null };
+  snapped_points: { origin: Snap; via: Snap[]; destination: Snap | null; destination_error?: string };
 };
 export type Snap = { label: string; node_id: string; requested: Coordinate; coordinates: [number, number]; distance_m: number };
 export type AppliedSettings = {

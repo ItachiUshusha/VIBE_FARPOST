@@ -34,7 +34,7 @@ export default function AuthForm({ registration = false }: { registration?: bool
     finally { setBusy(false); }
   };
   return <div className="service-page"><main className="auth-card">
-    <Link href="/" className="service-brand">↗ Эффект бабочки</Link><span className="service-eyebrow">Личный кабинет</span>
+    <Link href="/" className="service-brand">↗ 402x402</Link><span className="service-eyebrow">Личный кабинет</span>
     <h1>{registration ? "Создать аккаунт" : "С возвращением"}</h1><p className="service-muted">Сохраняйте расчёты и возвращайтесь к своим экспериментам.</p>
     {(error || ERRORS[params.get("error") || ""]) && <p className="service-error" role="alert">{error || ERRORS[params.get("error") || ""]}</p>}
     {separate && <button className="service-button secondary" disabled={busy} onClick={async () => { setBusy(true); setError(""); try { await accountApi("/auth/continue-separate", "POST"); router.replace("/account"); router.refresh(); } catch (failure) { setError(failure instanceof Error ? failure.message : "Вход не завершён"); } finally { setBusy(false); } }}>Создать отдельный аккаунт через внешний профиль</button>}

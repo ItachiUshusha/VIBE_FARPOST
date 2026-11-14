@@ -141,7 +141,7 @@
   .placement-hint, .app-shell[data-tool] .placement-hint { top: 70px; left: 12px; right: 12px; padding: 10px 8px 10px 12px; min-height: 56px; }
   .placement-hint button { min-width: 44px; min-height: 44px; }
   .app-shell[data-tool] .map-controls { top: 140px; }
-  .road-draw-controls { left: 0; right: 0; bottom: 0; max-width: none; padding: 12px 16px 4px; border-inline: 0; border-radius: 18px 18px 0 0; }
+  .road-draw-controls { left: 0; right: 0; bottom: 0; width: auto; max-width: none; padding: 12px 16px 4px; border-inline: 0; border-radius: 18px 18px 0 0; }
   .road-draw-controls button { min-height: 48px; }
   .road-cancel { min-height: 44px !important; }
   .resume-road { left: 12px; right: 12px; bottom: 100px; max-width: none; min-height: 48px; justify-content: center; }

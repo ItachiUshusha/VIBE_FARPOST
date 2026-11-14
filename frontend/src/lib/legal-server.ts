@@ -1,6 +1,6 @@
 import "server-only";
 import { indexingEnabled, publicOrigin } from "./server-config";
-export const LEGAL_TITLES = { legal: "Правовая информация", offer: "Публичная оферта", privacy: "Политика конфиденциальности" };
+export const LEGAL_TITLES = { legal: "Правовая информация", offer: "Публичная оферта", privacy: "Политика конфиденциальности", cookies: "Политика cookie", "analytics-consent": "Согласие на аналитику" };
 export type LegalSlug = keyof typeof LEGAL_TITLES;
 type Document = { published: boolean; title: string; text?: string; version?: string };
 export async function legalDocument(slug: LegalSlug): Promise<Document> {
@@ -12,5 +12,5 @@ export async function legalDocument(slug: LegalSlug): Promise<Document> {
 }
 export async function legalMetadata(slug: LegalSlug) {
   const document = await legalDocument(slug);
-  return { title: `${document.title} — Эффект бабочки`, alternates: { canonical: `${publicOrigin()}/${slug}` }, robots: { index: document.published && indexingEnabled(), follow: document.published && indexingEnabled() } };
+  return { title: `${document.title} — 402x402`, alternates: { canonical: `${publicOrigin()}/${slug}` }, robots: { index: document.published && indexingEnabled(), follow: document.published && indexingEnabled() } };
 }

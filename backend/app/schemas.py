@@ -48,7 +48,8 @@ class AddedHouse(StrictModel):
     house_id: str = Field(min_length=1, max_length=90, pattern=r"^[A-Za-z0-9_-]+$")
     coordinates: Coordinate
     residents: int = Field(strict=True, ge=1, le=20000)
-    terminal_id: str = Field(min_length=1, max_length=100)
+    # Accepted for older clients; new houses always use automatic distribution.
+    terminal_id: str | None = Field(default=None, min_length=1, max_length=100, deprecated=True)
 
 
 class HousingChanges(StrictModel):

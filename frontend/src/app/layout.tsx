@@ -3,6 +3,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 import "./services.css";
 import "./mobile-ux.css";
+import "./point-guidance.css";
 import SiteServices from "@/components/SiteServices";
 import { indexingEnabled, publicOrigin } from "@/lib/server-config";
 
@@ -14,7 +15,7 @@ export const viewport: Viewport = {
 };
 export function generateMetadata(): Metadata { return {
   metadataBase: new URL(publicOrigin()),
-  title: "Эффект бабочки — Первая Речка",
+  title: "402x402 — Первая Речка",
   description: "Одно перекрытие меняет весь район. Исследуйте дорожные сценарии Первой Речки во Владивостоке.",
   icons: { icon: "/icon.svg" },
   robots: { index: indexingEnabled(), follow: indexingEnabled() },

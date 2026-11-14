@@ -4,7 +4,8 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, Request
 
 router = APIRouter()
-TITLES = {"legal": "Правовая информация", "offer": "Публичная оферта", "privacy": "Политика конфиденциальности"}
+TITLES = {"legal": "Правовая информация", "offer": "Публичная оферта", "privacy": "Политика конфиденциальности",
+          "cookies": "Политика cookie", "analytics-consent": "Согласие на аналитику"}
 APPROVAL_PATH = Path(__file__).resolve().parents[1] / "data" / "legal-approved.json"
 
 

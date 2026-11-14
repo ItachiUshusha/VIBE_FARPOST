@@ -151,23 +151,37 @@ class ScenarioService:
             trip = after_lookup[house["origin_trip_id"]]
             trip["vehicle_count"] = max(0, trip["vehicle_count"] - weight)
             removed.append({**house, "vehicle_count": weight})
-        additions, added_ids = [], set()
+        additions, added_ids, house_trips = [], set(), []
         for new in housing["add"]:
             hid = new["house_id"]
             if hid in self.houses or hid in added_ids:
                 raise ValueError("ID нового дома уже используется")
             added_ids.add(hid)
-            terminal = self.terminals.get(new["terminal_id"])
-            if terminal is None:
-                raise ValueError("Выберите существующий пункт назначения дома")
             snapped = self.snap(new["coordinates"], "origin", "выезда нового дома")
             weight = new["residents"] * self.config["k_auto"]
-            house = {**new, "name": f"Новый дом · {new['residents']} жителей", "coordinates": [new["coordinates"]["lon"], new["coordinates"]["lat"]],
+            # Fixed destinations keep demand comparable when a road is closed. The
+            # route search reports unreachable shares instead of silently moving them.
+            destinations = {}
+            for terminal in sorted(self.terminals.values(), key=lambda item: item["terminal_id"]):
+                if terminal["node_id"] != snapped["node_id"]:
+                    destinations.setdefault(terminal["node_id"], terminal)
+            if not destinations:
+                raise ValueError("В данных района нет другого пункта назначения для машин нового дома.")
+            distribution = []
+            terminals = list(destinations.values())
+            for index, terminal in enumerate(terminals):
+                count = weight / len(terminals) if index < len(terminals) - 1 else weight - math.fsum(item["vehicle_count"] for item in distribution)
+                tid = f"house-{hid}:{terminal['terminal_id']}"
+                distribution.append({"terminal_id": terminal["terminal_id"], "label": terminal["label"],
+                                     "node_id": terminal["node_id"], "vehicle_count": count, "share": count / weight, "trip_id": tid})
+                house_trips.append({"trip_id": tid, "origin": snapped["node_id"], "destination": terminal["node_id"],
+                                    "vehicle_count": count, "origin_label": f"Новый дом · {new['residents']} жителей",
+                                    "destination_label": terminal["label"], "label": f"Новый дом · {new['residents']} жителей → {terminal['label']}"})
+            house = {**{key: value for key, value in new.items() if key != "terminal_id"}, "name": f"Новый дом · {new['residents']} жителей", "coordinates": [new["coordinates"]["lon"], new["coordinates"]["lat"]],
                      "exit_node_id": snapped["node_id"], "snap": snapped, "vehicle_count": weight, "source": "Точка пользователя"}
+            house.update(distribution_mode="all_directions", destination_count=len(distribution), distribution=distribution)
             additions.append(house)
-            after_trips.append({"trip_id": "house-" + hid, "origin": snapped["node_id"], "destination": terminal["node_id"],
-                                "vehicle_count": weight, "origin_label": house["name"], "destination_label": terminal["label"],
-                                "label": f"{house['name']} → {terminal['label']}"})
+        after_trips.extend(house_trips)
         overrides = payload.get("parking_occupancy", {})
         if set(overrides) - self.parkings.keys():
             raise ValueError("Настройки занятости содержат неизвестную парковку")
@@ -213,10 +227,10 @@ class ScenarioService:
                         "houses_after": self.house_weights[t["trip_id"]] - removed_weights[t["trip_id"]],
                         "before_weight": t["vehicle_count"], "after_weight": after_lookup[t["trip_id"]]["vehicle_count"] * demand}
                        for t in before_trips]
-        for house in additions:
-            trip_demand.append({"trip_id": "house-" + house["house_id"], "background_before": 0, "houses_before": 0,
-                                "background_after": 0, "houses_after": house["vehicle_count"],
-                                "before_weight": 0, "after_weight": house["vehicle_count"] * demand})
+        for trip in house_trips:
+            trip_demand.append({"trip_id": trip["trip_id"], "background_before": 0, "houses_before": 0,
+                                "background_after": 0, "houses_after": trip["vehicle_count"],
+                                "before_weight": 0, "after_weight": trip["vehicle_count"] * demand})
         personal = None
         if request:
             personal_before = self.personal_phase(request, anchors, before, set(), before_occupancy)

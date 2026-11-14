@@ -1,0 +1,47 @@
+.point-guidance-card {
+  position: absolute; z-index: 18; top: 16px; left: calc(var(--panel-space) + 24px);
+  width: min(460px, calc(100% - var(--panel-space) - 100px));
+  padding: 12px 16px 16px; border: 1px solid var(--border); border-radius: 18px;
+  background: var(--surface); color: var(--text); box-shadow: var(--shadow);
+}
+.point-guidance-heading { display: flex; gap: 10px; align-items: center; min-height: 44px; }
+.point-guidance-heading > svg { color: var(--accent); flex-shrink: 0; }
+.point-guidance-heading strong { flex: 1; font-size: 16px; line-height: 1.4; overflow-wrap: anywhere; }
+.point-guidance-heading button { min-width: 44px; width: 44px; height: 44px; flex-shrink: 0; }
+.point-guidance-card > p { font-size: 13px; line-height: 1.5; color: var(--muted); margin: 4px 0 10px; }
+.point-guidance-legend { display: flex; align-items: center; gap: 10px; font-size: 12px; margin-bottom: 12px; }
+.point-guidance-legend > span { display: flex; align-items: center; gap: 6px; }
+.point-guidance-legend i { width: 9px; height: 9px; border-radius: 50%; }
+.guidance-origin-dot { background: var(--red); }
+.guidance-target-dot { background: var(--accent); }
+.guidance-dashes { width: 32px; height: 2px; background: repeating-linear-gradient(90deg, var(--accent) 0 5px, transparent 5px 9px); }
+.point-guidance-card > .primary-button { width: 100%; min-height: 48px; font-size: 14px; }
+.point-guidance-target {
+  display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+  border: 3px solid var(--accent); border-radius: 50%; background: var(--surface); color: var(--accent);
+  font-size: 30px; line-height: 1; font-weight: 500; cursor: pointer; box-shadow: 0 0 0 6px #3488ec33;
+}
+.point-guidance-target > span {
+  position: absolute; left: 50%; top: calc(100% + 7px); transform: translateX(-50%);
+  min-width: 62px; padding: 5px 9px; border: 1px solid var(--accent); border-radius: 8px;
+  background: var(--surface); color: var(--text); font-size: 13px; font-weight: 700; line-height: 1.3;
+}
+.route-pin.invalid, .house-pin.invalid { background: var(--red); border-color: var(--surface); color: white; box-shadow: 0 0 0 5px #e34b4b40; }
+.app-shell[data-guidance] .map-top, .app-shell[data-guidance] .map-controls,
+.app-shell[data-guidance] .overview-strip, .app-shell[data-guidance] .map-task-toolbar { visibility: hidden; pointer-events: none; }
+.app-shell[data-guidance] .road-draw-controls { display: none; }
+@media (max-width: 900px), (max-height: 560px) and (max-width: 1100px) {
+  .point-guidance-card {
+    top: 0; left: 0; right: 0; width: 100%; max-width: none; border-inline: 0;
+    padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
+    border-radius: 0 0 18px 18px;
+  }
+}
+@media (max-height: 560px) and (max-width: 1100px) {
+  .point-guidance-card { display: grid; grid-template-columns: minmax(0, 1fr) 165px; gap: 2px 12px; padding-block: 6px; }
+  .point-guidance-heading { grid-column: 1; }
+  .point-guidance-heading strong { font-size: 14px; }
+  .point-guidance-card > p { grid-column: 1; font-size: 12px; margin: 0 0 4px; }
+  .point-guidance-legend { display: none; }
+  .point-guidance-card > .primary-button { grid-column: 2; grid-row: 1 / 3; align-self: center; padding-inline: 10px; }
+}

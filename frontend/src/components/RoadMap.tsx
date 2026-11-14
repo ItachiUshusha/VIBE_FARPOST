@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import maplibregl, { type GeoJSONSource, type Map as LibreMap, type StyleSpecification } from "maplibre-gl";
 import type { Feature, FeatureCollection, LineString, Point } from "geojson";
 import { Box, Check, Layers2, LocateFixed, Minus, Pause, Play, Plus, RotateCcw, Route, X } from "lucide-react";
-import type { Catalogs, Coordinate, Experiment, HouseDraft, MapData, PersonalPhase, Placement, RoadDraft, ScenarioRoad, Segment, State } from "@/lib/types";
+import type { Catalogs, Coordinate, Experiment, HouseDraft, MapData, PersonalPhase, Placement, PointGuidance, RoadDraft, ScenarioRoad, Segment, State } from "@/lib/types";
+import { distance } from "@/lib/api";
 import AppDialog from "./AppDialog";
 import { roadLanes } from "@/lib/roads";
 
@@ -36,6 +37,10 @@ type Props = {
   onRepositionHouse: (id: string) => void;
   drawingRoad: RoadDraft | null;
   drawingErrorIndex: number | null;
+  pointGuidance: PointGuidance | null;
+  guidanceFocus: Coordinate | null;
+  onApplyGuidance: () => void;
+  onDismissGuidance: () => void;
   mobile: boolean;
   onDisplayChange: (patch: Partial<Experiment>) => void;
   addedRoads: ScenarioRoad[];
@@ -101,6 +106,7 @@ function mapStyle(): StyleSpecification {
       walking: { type: "geojson", data: EMPTY },
       "new-roads": { type: "geojson", data: EMPTY },
       "road-draft-points": { type: "geojson", data: EMPTY },
+      "point-guidance": { type: "geojson", data: EMPTY },
       "house-areas": { type: "geojson", data: EMPTY },
     },
     layers: [
@@ -148,14 +154,19 @@ function mapStyle(): StyleSpecification {
       { id: "chosen-parking-label", type: "symbol", source: "chosen-parking", layout: { "text-field": "P", "text-font": ["Open Sans Semibold"], "text-size": 13, "text-allow-overlap": true }, paint: { "text-color": "#e0f3c3" } },
       { id: "house-points", type: "circle", source: "houses", paint: { "circle-radius": 10, "circle-color": "#273626", "circle-stroke-color": ["get", "color"], "circle-stroke-width": 2, "circle-opacity": .9 } },
       { id: "house-labels", type: "symbol", source: "houses", layout: { "text-field": ["get", "label"], "text-font": ["Open Sans Semibold"], "text-size": 11, "text-allow-overlap": true }, paint: { "text-color": ["get", "color"] } },
+      { id: "point-guidance-line-halo", type: "line", source: "point-guidance", filter: ["==", ["geometry-type"], "LineString"], paint: { "line-color": "#141a19", "line-width": 7, "line-opacity": .85 } },
+      { id: "point-guidance-line", type: "line", source: "point-guidance", filter: ["==", ["geometry-type"], "LineString"], paint: { "line-color": "#f5f9ed", "line-width": 3, "line-dasharray": [2, 2] } },
+      { id: "point-guidance-origin", type: "circle", source: "point-guidance", filter: ["==", ["get", "kind"], "origin"], paint: { "circle-radius": 10, "circle-color": "#ff6c75", "circle-stroke-width": 3, "circle-stroke-color": "#141a19" } },
     ],
   };
 }
 
 export default function RoadMap(props: Props) {
   const container = useRef<HTMLDivElement>(null);
+  const guidanceCard = useRef<HTMLElement>(null);
   const map = useRef<LibreMap | null>(null);
   const propsRef = useRef(props);
+  const guidanceMarker = useRef<maplibregl.Marker | null>(null);
   propsRef.current = props;
   const [ready, setReady] = useState(false);
   const [painted, setPainted] = useState(false);
@@ -338,7 +349,7 @@ export default function RoadMap(props: Props) {
     if (!ready || !map.current || !props.experiment.routeEnabled) return;
     props.experiment.points.forEach((point, index) => {
       if (!point) return;
-      const element = document.createElement("div"); element.className = "route-pin" + (index === props.experiment.points.length - 1 ? " destination" : "");
+      const element = document.createElement("div"); element.className = "route-pin" + (index === props.experiment.points.length - 1 ? " destination" : "") + (props.pointGuidance?.target.kind === "route" && props.pointGuidance.target.index === index ? " invalid" : "");
       element.textContent = index === 0 ? "А" : index === props.experiment.points.length - 1 ? "Б" : String(index);
       element.title = `Точка ${element.textContent} · перетащите для изменения`;
       element.addEventListener("click", event => {
@@ -350,7 +361,7 @@ export default function RoadMap(props: Props) {
       routeMarkers.current.push(marker);
     });
     return () => routeMarkers.current.forEach(marker => marker.remove());
-  }, [ready, props.experiment.points, props.experiment.routeEnabled, props.disabled, props.placement]);
+  }, [ready, props.experiment.points, props.experiment.routeEnabled, props.disabled, props.placement, props.pointGuidance]);
 
   useEffect(() => {
     houseMarkers.current.forEach(marker => marker.remove()); houseMarkers.current = [];
@@ -358,7 +369,7 @@ export default function RoadMap(props: Props) {
     for (const house of props.experiment.addedHouses) {
       const element = document.createElement("button");
       element.type = "button";
-      element.className = "house-pin" + (props.editingHouseId === house.house_id ? " selected" : "");
+      element.className = "house-pin" + (props.editingHouseId === house.house_id ? " selected" : "") + (props.pointGuidance?.target.kind === "house" && props.pointGuidance.target.houseId === house.house_id ? " invalid" : "");
       element.textContent = "Д";
       const label = Number.isFinite(house.residents) ? house.residents : "—";
       element.title = `Новый дом · ${label} жителей. Нажмите для настройки или перетащите`;
@@ -376,7 +387,7 @@ export default function RoadMap(props: Props) {
       houseMarkers.current.push(marker);
     }
     return () => houseMarkers.current.forEach(marker => marker.remove());
-  }, [ready, props.experiment.addedHouses, props.experiment.showHouses, props.hasResult, props.hasHouseChanges, props.disabled, props.placement, props.editingHouseId]);
+  }, [ready, props.experiment.addedHouses, props.experiment.showHouses, props.hasResult, props.hasHouseChanges, props.disabled, props.placement, props.editingHouseId, props.pointGuidance]);
 
   useEffect(() => {
     if (!ready || !map.current) return;
@@ -410,6 +421,50 @@ export default function RoadMap(props: Props) {
       map.current.fitBounds(bounds, { padding: { top: 120, right: 65, bottom: 125, left: 35 }, maxZoom: active ? 15.8 : 16.2, duration: propsRef.current.reducedMotion ? 0 : 550 });
     }
   }, [ready, props.focus]);
+
+  useEffect(() => {
+    if (!ready || !map.current) return;
+    const instance = map.current;
+    const source = instance.getSource("point-guidance") as GeoJSONSource;
+    const hint = props.pointGuidance;
+    const data: FeatureCollection = hint ? { type: "FeatureCollection", features: [
+      { type: "Feature", properties: { kind: "direction" }, geometry: { type: "LineString", coordinates: [[hint.from.lon, hint.from.lat], [hint.to.lon, hint.to.lat]] } },
+      { type: "Feature", properties: { kind: "origin" }, geometry: { type: "Point", coordinates: [hint.from.lon, hint.from.lat] } },
+    ] } : EMPTY;
+    source.setData(data);
+    guidanceMarker.current?.remove(); guidanceMarker.current = null;
+    if (!hint) return;
+    const element = document.createElement("button");
+    element.type = "button"; element.className = "point-guidance-target";
+    element.setAttribute("aria-label", `Переставить точку ${hint.label} сюда`);
+    element.textContent = "+";
+    const label = document.createElement("span"); label.textContent = "Сюда"; element.appendChild(label);
+    element.addEventListener("click", event => { event.stopPropagation(); if (!propsRef.current.disabled) propsRef.current.onApplyGuidance(); });
+    guidanceMarker.current = new maplibregl.Marker({ element }).setLngLat([hint.to.lon, hint.to.lat]).addTo(instance);
+    const previousMinZoom = instance.getMinZoom();
+    instance.setMinZoom(0);
+    const fit = (duration: number) => {
+      const height = instance.getContainer().clientHeight;
+      const bottom = Math.min(70, height * .4);
+      const top = Math.min((guidanceCard.current?.offsetHeight || 140) + 20, Math.max(0, height - bottom - 24));
+      instance.fitBounds([[hint.from.lon, hint.from.lat], [hint.to.lon, hint.to.lat]], {
+        padding: { top, right: 45, bottom, left: 45 }, maxZoom: 16.5, duration,
+      });
+    };
+    fit(propsRef.current.reducedMotion ? 0 : 450);
+    let initialResize = true;
+    const observer = new ResizeObserver(() => { if (initialResize) initialResize = false; else fit(0); });
+    observer.observe(instance.getContainer());
+    return () => {
+      observer.disconnect(); guidanceMarker.current?.remove(); guidanceMarker.current = null;
+      if (map.current === instance) instance.setMinZoom(previousMinZoom);
+    };
+  }, [ready, props.pointGuidance]);
+
+  useEffect(() => {
+    if (!ready || !map.current || !props.guidanceFocus || propsRef.current.pointGuidance) return;
+    map.current.easeTo({ center: [props.guidanceFocus.lon, props.guidanceFocus.lat], zoom: Math.max(14.8, map.current.getZoom()), padding: 0, duration: propsRef.current.reducedMotion ? 0 : 400 });
+  }, [ready, props.guidanceFocus]);
 
   useEffect(() => {
     if (!ready || !props.resetKey) return;
@@ -483,7 +538,13 @@ export default function RoadMap(props: Props) {
         <span className="map-location"><span className="live-dot" />ПЕРВАЯ РЕЧКА</span>
       </div>
       <div className="map-label"><span className="map-kicker">ВЛАДИВОСТОК</span><strong>Первая Речка</strong><span>Одно решение. Десятки новых путей.</span></div>
-      {props.placement && <div className="placement-hint" role="status"><span>{props.placement.kind === "road" ? props.drawingRoad?.points.length ? props.drawingRoad.points.length >= 12 ? "Достигнут предел: 12 точек. Нажмите «Готово»" : "Добавляйте повороты и конец дороги, затем нажмите «Готово»" : "Поставьте начало новой дороги рядом с перекрёстком" : props.placement.kind === "demolish" ? "Нажмите на выделенный дом: машины его жителей исчезнут из сценария" : props.placement.kind === "house" ? props.placement.houseId ? "Выберите новое положение дома" : "Нажмите на карту — появится дом с настройками" : props.placement.index === 0 ? "Поставьте точку А на карте" : props.placement.index === props.experiment.points.length - 1 ? "Поставьте точку Б на карте" : `Поставьте точку «Через ${props.placement.index}»`}</span><button onClick={props.onCancelPlacement} aria-label="Отменить выбор точки"><X size={14} /></button></div>}
+      {props.placement && !props.pointGuidance && <div className="placement-hint" role="status"><span>{props.placement.kind === "road" ? props.drawingRoad?.points.length ? props.drawingRoad.points.length >= 12 ? "Достигнут предел: 12 точек. Нажмите «Готово»" : "Добавляйте повороты и конец дороги, затем нажмите «Готово»" : "Поставьте начало новой дороги рядом с перекрёстком" : props.placement.kind === "demolish" ? "Нажмите на выделенный дом: машины его жителей исчезнут из сценария" : props.placement.kind === "house" ? props.placement.houseId ? "Выберите новое положение дома" : "Нажмите на карту — появится дом с настройками" : props.placement.index === 0 ? "Поставьте точку А на карте" : props.placement.index === props.experiment.points.length - 1 ? "Поставьте точку Б на карте" : `Поставьте точку «Через ${props.placement.index}»`}</span><button onClick={props.onCancelPlacement} aria-label="Отменить выбор точки"><X size={14} /></button></div>}
+      {props.pointGuidance && <aside ref={guidanceCard} className="point-guidance-card" role="alert" aria-label="Как переставить точку">
+        <div className="point-guidance-heading"><Route size={20} /><strong>Переставьте «{props.pointGuidance.label}»</strong><button className="icon-button" aria-label="Скрыть подсказку" onClick={props.onDismissGuidance}><X size={18} /></button></div>
+        <p>{props.pointGuidance.message}</p>
+        <div className="point-guidance-legend"><span><i className="guidance-origin-dot" />Сейчас</span><span className="guidance-dashes" aria-hidden="true" /><span><i className="guidance-target-dot" />Сюда · {distance(props.pointGuidance.distance_m)}</span></div>
+        <button className="primary-button" disabled={props.disabled} onClick={props.onApplyGuidance}>Переставить сюда<Check size={18} /></button>
+      </aside>}
       <div className="map-controls">
         {!mapError && <>
         <div className="control-stack"><button aria-label="Приблизить карту" title="Приблизить" onClick={() => map.current?.zoomIn()}><Plus size={18} /></button><button aria-label="Отдалить карту" title="Отдалить" onClick={() => map.current?.zoomOut()}><Minus size={18} /></button></div>
@@ -524,6 +585,13 @@ function SvgFallback({ data, state, selected, onSelect, disabled, activeTrip, fo
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const drag = useRef<{ x: number; y: number; startX: number; startY: number } | null>(null);
+  const svg = useRef<SVGSVGElement>(null);
+  const [pixelScale, setPixelScale] = useState(1);
+  useEffect(() => {
+    const element = svg.current; if (!element) return;
+    const observer = new ResizeObserver(() => setPixelScale(Math.max(.05, Math.min(element.clientWidth / 1000, element.clientHeight / 850))));
+    observer.observe(element); return () => observer.disconnect();
+  }, []);
   const coords = data.edges.features.flatMap(f => f.geometry.coordinates);
   const bounds = { minX: Math.min(...coords.map(c => c[0])), maxX: Math.max(...coords.map(c => c[0])), minY: Math.min(...coords.map(c => c[1])), maxY: Math.max(...coords.map(c => c[1])) };
   const xy = (c: number[]) => [((c[0] - bounds.minX) / (bounds.maxX - bounds.minX)) * 1000, (1 - (c[1] - bounds.minY) / (bounds.maxY - bounds.minY)) * 850];
@@ -545,8 +613,28 @@ function SvgFallback({ data, state, selected, onSelect, disabled, activeTrip, fo
     setZoom(nextZoom);
     setPan({ x: (500 - (minX + maxX) / 2) * nextZoom, y: (425 - (minY + maxY) / 2) * nextZoom });
   }, [focus]);
+  useEffect(() => {
+    if (!extras.pointGuidance) return;
+    const { from, to } = extras.pointGuidance;
+    const a = latest.current.xy([from.lon, from.lat]), b = latest.current.xy([to.lon, to.lat]);
+    const element = svg.current;
+    if (!element) return;
+    const width = element.clientWidth, height = element.clientHeight;
+    const card = element.closest(".map-stage")?.querySelector(".point-guidance-card")?.getBoundingClientRect().height || 140;
+    const bottom = Math.min(70, height * .4), top = Math.min(card + 20, Math.max(0, height - bottom - 24));
+    const availableHeight = Math.max(24, height - top - bottom);
+    const nextZoom = Math.min(6, Math.max(.05, Math.min((width - 90) / (pixelScale * (Math.abs(a[0] - b[0]) + 1)), availableHeight / (pixelScale * (Math.abs(a[1] - b[1]) + 1)))));
+    const offsetY = (height - 850 * pixelScale) / 2;
+    const targetY = top + availableHeight / 2;
+    setZoom(nextZoom); setPan({ x: (500 - (a[0] + b[0]) / 2) * nextZoom, y: (425 - (a[1] + b[1]) / 2) * nextZoom + (targetY - offsetY) / pixelScale - 425 });
+  }, [extras.pointGuidance, pixelScale]);
+  useEffect(() => {
+    if (!extras.guidanceFocus) return;
+    const point = latest.current.xy([extras.guidanceFocus.lon, extras.guidanceFocus.lat]);
+    setZoom(3); setPan({ x: (500 - point[0]) * 3, y: (425 - point[1]) * 3 });
+  }, [extras.guidanceFocus]);
   useEffect(() => { setZoom(1); setPan({ x: 0, y: 0 }); }, [resetKey]);
-  return <><svg className="svg-map" viewBox="0 0 1000 850" aria-label="Локальная дорожная схема" onWheel={e => setZoom(z => Math.min(6, Math.max(1, z * (e.deltaY > 0 ? 0.9 : 1.1))))}
+  return <><svg ref={svg} className="svg-map" viewBox="0 0 1000 850" aria-label="Локальная дорожная схема" onWheel={e => setZoom(z => Math.min(6, Math.max(1, z * (e.deltaY > 0 ? 0.9 : 1.1))))}
     onClick={e => { if (!extras.placement || disabled) return; const matrix = (e.currentTarget.querySelector("g") as SVGGraphicsElement)?.getScreenCTM(); if (!matrix) return; const point = new DOMPoint(e.clientX, e.clientY).matrixTransform(matrix.inverse()); extras.onMapPoint({ lon: bounds.minX + point.x / 1000 * (bounds.maxX - bounds.minX), lat: bounds.maxY - point.y / 850 * (bounds.maxY - bounds.minY) }); }}
     onPointerDown={e => { if (e.target === e.currentTarget && !extras.placement) { drag.current = { x: e.clientX, y: e.clientY, startX: pan.x, startY: pan.y }; e.currentTarget.setPointerCapture(e.pointerId); } }}
     onPointerMove={e => { if (drag.current) setPan({ x: drag.current.startX + (e.clientX - drag.current.x) * 1.5, y: drag.current.startY + (e.clientY - drag.current.y) * 1.5 }); }}
@@ -571,6 +659,18 @@ function SvgFallback({ data, state, selected, onSelect, disabled, activeTrip, fo
       {extras.experiment.showHouses && extras.catalogs?.houses.map(h => { const [x, y] = xy(h.coordinates); const removed = (!extras.hasResult || extras.hasHouseChanges) && extras.experiment.removedHouses.includes(h.house_id); return <g key={h.house_id} role="button" tabIndex={0} aria-label={`${removed ? "Вернуть" : "Снести"} дом ${h.name}`} onKeyDown={event => { if (event.key === "Enter" && !disabled) extras.onHouse(h.house_id); }} onClick={e => { if ((!extras.placement || extras.placement.kind === "demolish") && !disabled) { e.stopPropagation(); extras.onHouse(h.house_id); } }} style={{ cursor: "pointer" }}><circle cx={x} cy={y} r={(extras.placement?.kind === "demolish" ? 18 : 10) / zoom} fill={mapColor("#273626", extras.dark)} stroke={mapColor(removed ? "#f18b7d" : "#c7ed83", extras.dark)} strokeWidth={2 / zoom} /><text x={x} y={y + 4 / zoom} textAnchor="middle" fill={mapColor("#c7ed83", extras.dark)} fontSize={11 / zoom}>{removed ? "×" : "Д"}</text><title>{h.name} · {h.residents} жителей</title></g>; })}
       {extras.experiment.showHouses && (!extras.hasResult || extras.hasHouseChanges) && extras.experiment.addedHouses.map(h => { const [x, y] = xy([h.coordinates.lon, h.coordinates.lat]); return <g key={h.house_id} role="button" tabIndex={0} aria-label={`Настроить метку дома · ${h.residents} жителей`} onKeyDown={e => { if (e.key === "Enter" && !disabled) extras.onEditHouse(h.house_id); }} onClick={e => { if (!extras.placement && !disabled) { e.stopPropagation(); extras.onEditHouse(h.house_id); } }} style={{ cursor: "pointer" }}><circle cx={x} cy={y} r={13 / zoom} fill={mapColor("#273626", extras.dark)} stroke={mapColor("#88d8c4", extras.dark)} strokeWidth={2 / zoom} /><text x={x} y={y + 4 / zoom} textAnchor="middle" fill={mapColor("#88d8c4", extras.dark)} fontSize={11 / zoom}>Д</text><title>{`Новый дом · ${h.residents} жителей. Нажмите для настройки`}</title></g>; })}
       {extras.experiment.routeEnabled && extras.experiment.points.map((p, index) => { if (!p) return null; const [x, y] = xy([p.lon, p.lat]); return <g key={index}><circle cx={x} cy={y} r={12 / zoom} fill={mapColor("#b4caff", extras.dark)} stroke={mapColor("#172522", extras.dark)} strokeWidth={2 / zoom} /><text x={x} y={y + 4 / zoom} textAnchor="middle" fill={mapColor("#172522", extras.dark)} fontSize={12 / zoom}>{index === 0 ? "А" : index === extras.experiment.points.length - 1 ? "Б" : index}</text></g>; })}
+      {extras.pointGuidance && (() => {
+        const hint = extras.pointGuidance, a = xy([hint.from.lon, hint.from.lat]), b = xy([hint.to.lon, hint.to.lat]), scale = zoom * pixelScale;
+        return <g className="svg-point-guidance">
+          <line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke={mapColor("#f5f9ed", extras.dark)} strokeWidth={3} strokeDasharray="6 6" vectorEffect="non-scaling-stroke" pointerEvents="none" />
+          <circle cx={a[0]} cy={a[1]} r={10 / scale} fill={mapColor("#ff6c75", extras.dark)} stroke={mapColor("#141a19", extras.dark)} strokeWidth={2 / scale} pointerEvents="none" />
+          <g role="button" tabIndex={0} aria-label={`Переставить точку ${hint.label} сюда`} onClick={event => { event.stopPropagation(); if (!disabled) extras.onApplyGuidance(); }} onKeyDown={event => { if (!disabled && ["Enter", " "].includes(event.key)) { event.preventDefault(); event.stopPropagation(); extras.onApplyGuidance(); } }} style={{ cursor: "pointer" }}>
+            <circle cx={b[0]} cy={b[1]} r={22 / scale} fill="transparent" />
+            <circle cx={b[0]} cy={b[1]} r={12 / scale} fill={mapColor("#f5f9ed", extras.dark)} stroke={mapColor("#141a19", extras.dark)} strokeWidth={3 / scale} />
+            <text x={b[0]} y={b[1] + 32 / scale} textAnchor="middle" fontSize={13 / scale} fontWeight="700" fill={mapColor("#f5f9ed", extras.dark)} stroke={mapColor("#141a19", extras.dark)} strokeWidth={3 / scale} paintOrder="stroke">Сюда</text>
+          </g>
+        </g>;
+      })()}
     </g>
   </svg><span className="svg-attribution">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a></span><div className="map-controls svg-fallback-controls"><div className="control-stack"><button aria-label="Приблизить карту" onClick={() => setZoom(z => Math.min(6, z * 1.3))}><Plus size={18} /></button><button aria-label="Отдалить карту" onClick={() => setZoom(z => Math.max(1, z / 1.3))}><Minus size={18} /></button></div><button className="map-control" aria-label="Начальный вид карты" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}><LocateFixed size={18} /></button></div></>;
 }

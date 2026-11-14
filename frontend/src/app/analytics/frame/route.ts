@@ -23,7 +23,7 @@ for(const type of [HTMLImageElement,HTMLScriptElement]){
 const nativeAttribute=Element.prototype.setAttribute;
 Element.prototype.setAttribute=function(name,value){if(permitted||!['src','srcset','href'].includes(name.toLowerCase()))return nativeAttribute.call(this,name,value)};
 window.__disableAnalytics=()=>{permitted=false;window.stop()};
-const paths=new Set(['/','/login','/register','/account','/legal','/offer','/privacy']);
+const paths=new Set(['/','/login','/register','/account','/legal','/offer','/privacy','/cookies','/analytics-consent']);
 window.ym=function(){(window.ym.a=window.ym.a||[]).push(arguments)};window.ym.l=Date.now();
 ym(counter,'init',{defer:true,clickmap:false,trackLinks:false,accurateTrackBounce:false,webvisor:false,trackHash:false,sendTitle:false,disableYtm:true});
 let last='';

@@ -145,14 +145,22 @@ def test_missing_or_distant_parking_keeps_route_to_destination(mode):
 
 def test_added_house_weight_and_selected_demand_are_independent():
     model = service()
-    house = {"house_id": "new-40", "coordinates": {"lon": 131, "lat": 43}, "residents": 40, "terminal_id": "to-c"}
+    house = {"house_id": "new-40", "coordinates": {"lon": 131, "lat": 43}, "residents": 40}
     result = model.simulate(payload(vehicle_count=1000, housing={"add": [house], "remove": []}, demand_factor=1.4))
     assert result["before"]["metrics"]["vehicle_count"] == 1000
     assert result["after"]["metrics"]["vehicle_count"] == pytest.approx(1040 * 1.4)
-    assert result["after"]["trip_metrics"]["house-new-40"]["vehicle_count"] == pytest.approx(56)
-    assert result["house_changes"]["added"][0]["vehicle_count"] == 40
-    assert result["trip_demand"][-1]["before_weight"] == 0
-    assert result["trip_demand"][-1]["after_weight"] == pytest.approx(56)
+    added = result["house_changes"]["added"][0]
+    assert added["vehicle_count"] == 40
+    assert added["distribution_mode"] == "all_directions"
+    assert added["destination_count"] == 2
+    assert {item["terminal_id"] for item in added["distribution"]} == {"to-b", "to-c"}
+    for item in added["distribution"]:
+        assert item["vehicle_count"] == pytest.approx(20)
+        assert result["after"]["trip_metrics"][item["trip_id"]]["vehicle_count"] == pytest.approx(28)
+    demand = [t for t in result["trip_demand"] if t["trip_id"].startswith("house-new-40:")]
+    assert len(demand) == 2
+    assert all(t["before_weight"] == 0 for t in demand)
+    assert sum(t["after_weight"] for t in demand) == pytest.approx(56)
     assert result["applied_settings"]["alpha"] == .15
     assert result["applied_settings"]["beta"] == 4
     assert result["comparison"]["matched_trip_count"] == 1

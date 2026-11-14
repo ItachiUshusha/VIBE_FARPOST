@@ -1,6 +1,7 @@
 export const ANALYTICS_PAGES: Record<string, string> = {
   "/": "Карта района", "/login": "Вход", "/register": "Регистрация", "/account": "Личный кабинет",
   "/legal": "Правовая информация", "/offer": "Публичная оферта", "/privacy": "Политика конфиденциальности",
+  "/cookies": "Политика cookie", "/analytics-consent": "Согласие на аналитику",
 };
 export type Goal = "registration_success" | "login_success" | "simulation_success";
 export type UtmAllowlist = Record<string, string[]>;

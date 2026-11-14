@@ -73,7 +73,7 @@ def create_app(settings: Settings | None = None, database=None) -> FastAPI:
         if client is not None:
             client.close()
 
-    app = FastAPI(title="Эффект бабочки", version="1.0.0", lifespan=lifespan)
+    app = FastAPI(title="402x402", version="1.0.0", lifespan=lifespan)
     app.state.settings = settings
     app.state.security_ready = False
     app.include_router(accounts_router)
@@ -130,6 +130,10 @@ def create_app(settings: Settings | None = None, database=None) -> FastAPI:
                 "edges": {"type": "FeatureCollection", "features": features}, "segments": data["segments"],
                 "junctions": [{"node_id": str(node["node_id"]), "coordinates": [node["lon"], node["lat"]]} for node in data["nodes"]
                               if engine.graph.in_degree(str(node["node_id"])) > 0 and engine.graph.out_degree(str(node["node_id"])) > 0],
+                # Same eligibility rules as ScenarioService.snap; hints must respect one-way streets.
+                "snap_nodes": [{"node_id": str(node["node_id"]), "coordinates": [node["lon"], node["lat"]],
+                                "incoming": engine.graph.in_degree(str(node["node_id"])) > 0,
+                                "outgoing": engine.graph.out_degree(str(node["node_id"])) > 0} for node in data["nodes"]],
                 "model": {k: data["config"][k] for k in ["alpha", "beta", "elevated_threshold", "high_threshold"]},
                 "traffic": request.app.state.scenarios.config}
 

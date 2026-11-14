@@ -26,7 +26,7 @@ export function DesignProvider({ children }: { children: ReactNode }) {
     onINP(report, { reportAllChanges: true });
   }, []);
   return <MotionConfig reducedMotion="user"><LazyMotion features={domAnimation} strict>
-    <App name="Эффект бабочки" theme="ios" darkMode="auto" clicks={{ externalLinks: "a" }} className="design-app">{children}</App>
+    <App name="402x402" theme="ios" darkMode="auto" clicks={{ externalLinks: "a" }} className="design-app">{children}</App>
   </LazyMotion></MotionConfig>;
 }
 

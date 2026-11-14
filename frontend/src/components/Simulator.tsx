@@ -8,8 +8,9 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { Activity, ArrowDown, ArrowDownRight, ArrowLeftRight, ArrowRight, ArrowUpRight, Ban, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Download, Expand, GitBranch, Info, Layers3, MapPin, MousePointer2, Play, RefreshCw, RotateCcw, Route, Search, SlidersHorizontal, Sparkles, TrafficCone, TrendingUp, Users, X, Zap } from "lucide-react";
 import { api, distance, number, shortTime, time, timeChange } from "@/lib/api";
 import { nearestJunction, plural, roadLanes, roadLength, trafficLabel } from "@/lib/roads";
+import { firstMisplacedPoint, suggestPoint, suggestRoadPoint } from "@/lib/point-guidance";
 import type { Delta, MapData, Preset, Run, ScenarioType, Segment, State } from "@/lib/types";
-import type { Catalogs, Coordinate, Experiment, HouseDraft, Placement, RoadDraft, ScenarioRoad } from "@/lib/types";
+import type { Catalogs, Coordinate, Experiment, HouseDraft, Placement, PointGuidance, RoadDraft, ScenarioRoad } from "@/lib/types";
 import ExperimentPanel, { ExperimentHelp, initialExperiment, WEATHER_NAMES } from "./ExperimentPanel";
 import PersonalResult from "./PersonalResult";
 import HouseEditor from "./HouseEditor";
@@ -62,6 +63,8 @@ function SimulatorWorkspace() {
   const roadReturn = useRef<PanelView>("map");
   const [drawingRoad, setDrawingRoad] = useState<RoadDraft | null>(null);
   const [roadError, setRoadError] = useState<{ text: string; index: number | null } | null>(null);
+  const [pointGuidance, setPointGuidance] = useState<PointGuidance | null>(null);
+  const [guidanceFocus, setGuidanceFocus] = useState<Coordinate | null>(null);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [baselineBusy, setBaselineBusy] = useState(false);
@@ -127,10 +130,12 @@ function SimulatorWorkspace() {
 
   const changeExperiment = useCallback((patch: Partial<Experiment>) => {
     setExperiment(previous => ({ ...previous, ...patch }));
-    if (Object.keys(patch).some(key => key !== "showParkings" && key !== "showHouses")) resetResult();
+    if (Object.keys(patch).some(key => key !== "showParkings" && key !== "showHouses")) { resetResult(); setPointGuidance(null); }
   }, [resetResult]);
 
   const beginPlacement = (action: Placement) => {
+    setPointGuidance(null);
+    if (action?.kind !== "road") setRoadError(null);
     if (action?.kind === "house" && action.houseId && editingHouse) repositionDraft.current = editingHouse;
     else if (action?.kind === "house") { editorReturn.current = panelView; repositionDraft.current = null; }
     setPlacement(action);
@@ -139,6 +144,7 @@ function SimulatorWorkspace() {
     setActionsOpen(false);
   };
   const startRoad = (previous?: RoadDraft) => {
+    setPointGuidance(null); setRoadError(null);
     if (drawingRoad && !previous) { setPlacement({ kind: "road" }); setPanelView("map"); setActionsOpen(false); return; }
     if (drawingRoad && previous && drawingRoad.road_id !== previous.road_id) { notify("Сначала завершите или отмените сохранённый черновик дороги."); return; }
     if (busyRef.current || !data || (!previous && experiment.addedRoads.length >= 5)) return;
@@ -152,12 +158,22 @@ function SimulatorWorkspace() {
     if (!drawingRoad || drawingRoad.points.length < 2 || !data || !catalogs || busyRef.current) return;
     const radius = catalogs.config.snap_radius_m;
     const start = nearestJunction(data, drawingRoad.points[0], radius), end = nearestJunction(data, drawingRoad.points.at(-1)!, radius);
-    if (!start || !end) { setRoadError({ text: `Выберите ${!start ? "начало" : "конец"} не дальше ${radius} м от перекрёстка. Нажмите «Назад» и поставьте точку ближе к улице.`, index: !start ? 0 : drawingRoad.points.length - 1 }); return; }
-    if (start.nodeId === end.nodeId) { setRoadError({ text: "Начало и конец совпали. Уберите последнюю точку и выберите другой перекрёсток.", index: drawingRoad.points.length - 1 }); return; }
+    if (!start || !end) {
+      const index = !start ? 0 : drawingRoad.points.length - 1;
+      setPointGuidance(suggestRoadPoint(data, drawingRoad, drawingRoad.points[index], index, index ? start?.nodeId : undefined));
+      setRoadError({ text: `Выберите ${!start ? "начало" : "конец"} не дальше ${radius} м от перекрёстка.`, index }); return;
+    }
+    if (start.nodeId === end.nodeId) {
+      setPointGuidance(suggestRoadPoint(data, drawingRoad, drawingRoad.points.at(-1)!, drawingRoad.points.length - 1, start.nodeId));
+      setRoadError({ text: "Начало и конец совпали. Соедините два разных перекрёстка.", index: drawingRoad.points.length - 1 }); return;
+    }
     const road = { ...drawingRoad, points: [start.point, ...drawingRoad.points.slice(1, -1), end.point] };
-    if (roadLength(road.points) < 10 || roadLength(road.points) > 10000) { setRoadError({ text: "Длина дороги должна быть от 10 м до 10 км. Измените последнюю точку или уберите лишние повороты.", index: drawingRoad.points.length - 1 }); return; }
+    if (roadLength(road.points) < 10 || roadLength(road.points) > 10000) {
+      setPointGuidance(suggestRoadPoint(data, drawingRoad, drawingRoad.points.at(-1)!, drawingRoad.points.length - 1, start.nodeId));
+      setRoadError({ text: "Длина дороги должна быть от 10 м до 10 км. Измените последнюю точку или уберите лишние повороты.", index: drawingRoad.points.length - 1 }); return;
+    }
     editorReturn.current = roadReturn.current;
-    setDrawingRoad(null); setRoadError(null); setPlacement(null); setEditingRoad(road);
+    setDrawingRoad(null); setRoadError(null); setPointGuidance(null); setPlacement(null); setEditingRoad(road);
   };
   const editRoad = (id: string) => {
     const road = experiment.addedRoads.find(item => item.road_id === id);
@@ -176,6 +192,11 @@ function SimulatorWorkspace() {
   const closeHouse = (apply = false) => {
     if (apply && editingHouse) {
       if (!Number.isInteger(editingHouse.residents) || editingHouse.residents < 1 || editingHouse.residents > 20000) return;
+      const hint = data && catalogs ? suggestPoint(data, editingHouse.coordinates, { kind: "house", houseId: editingHouse.house_id }, "Выезд из дома", catalogs.config.snap_radius_m, "origin") : null;
+      if (hint) {
+        repositionDraft.current = editingHouse; setEditingHouse(null); setPlacement({ kind: "house", houseId: editingHouse.house_id });
+        setPointGuidance(hint); setPanelView("map"); return;
+      }
       const exists = experiment.addedHouses.some(item => item.house_id === editingHouse.house_id);
       changeExperiment({ addedHouses: exists ? experiment.addedHouses.map(item => item.house_id === editingHouse.house_id ? editingHouse : item) : [...experiment.addedHouses, editingHouse], showHouses: true });
     }
@@ -183,7 +204,12 @@ function SimulatorWorkspace() {
     setEditingHouse(null); setPanelView(editorReturn.current);
   };
   const cancelPlacement = () => {
-    if (placement?.kind === "house" && placement.houseId && repositionDraft.current) setEditingHouse(repositionDraft.current);
+    setPointGuidance(null);
+    if (placement?.kind === "house" && placement.houseId && repositionDraft.current) {
+      const original = experiment.addedHouses.find(house => house.house_id === placement.houseId);
+      if (original) setEditingHouse({ ...repositionDraft.current, coordinates: original.coordinates });
+      else repositionDraft.current = null;
+    }
     if (placement?.kind === "road") { setDrawingRoad(null); setRoadError(null); setPanelView(roadReturn.current); }
     setPlacement(null);
   };
@@ -203,16 +229,22 @@ function SimulatorWorkspace() {
       let nextPoint = point;
       if (drawingRoad && !drawingRoad.points.length && data && catalogs) {
         const connection = nearestJunction(data, point, catalogs.config.snap_radius_m);
-        if (!connection) { setRoadError({ text: `Выберите начало ближе к перекрёстку — в пределах ${catalogs.config.snap_radius_m} м. Линия сохранена.`, index: null }); return; }
+        if (!connection) {
+          setPointGuidance(suggestRoadPoint(data, drawingRoad, point, 0));
+          setRoadError({ text: `Выберите начало ближе к перекрёстку — в пределах ${catalogs.config.snap_radius_m} м.`, index: null }); return;
+        }
         nextPoint = connection.point;
       }
       if (drawingRoad && drawingRoad.points.length >= 12) { setRoadError({ text: "Можно поставить до 12 точек. Завершите дорогу или уберите последнюю точку.", index: drawingRoad.points.length - 1 }); return; }
-      setRoadError(null);
+      setRoadError(null); setPointGuidance(null);
       setDrawingRoad(previous => previous && previous.points.length < 12 ? { ...previous, points: [...previous.points, nextPoint] } : previous);
       return;
     } else if (placement.kind === "route") {
       const points = [...experiment.points]; points[placement.index] = point;
       changeExperiment({ points, routeEnabled: true });
+      const index = placement.index, end = index === points.length - 1;
+      const hint = data && catalogs && !(end && experiment.parkingMode !== "none") ? suggestPoint(data, point, { kind: "route", index }, index === 0 ? "А" : end ? "Б" : `Через ${index}`, catalogs.config.snap_radius_m, index === 0 ? "origin" : end ? "destination" : "via") : null;
+      if (hint) { setPointGuidance(hint); setPanelView("map"); return; }
       setPlacement(placement.index === 0 && !points[points.length - 1] ? { kind: "route", index: points.length - 1 } : null);
       if (!(placement.index === 0 && !points[points.length - 1])) setPanelView("scenario");
     } else {
@@ -220,14 +252,24 @@ function SimulatorWorkspace() {
       const id = placement.houseId || "user-" + crypto.randomUUID();
       if (!placement.houseId && experiment.addedHouses.length >= 10) { setError("В один сценарий можно добавить до 10 домов."); setPlacement(null); return; }
       const previous = placement.houseId ? repositionDraft.current || experiment.addedHouses.find(h => h.house_id === id) : null;
-      setEditingHouse(previous ? { ...previous, coordinates: point } : { house_id: id, coordinates: point, residents: 40, terminal_id: catalogs.terminals[0].terminal_id });
+      const draft = previous ? { ...previous, coordinates: point } : { house_id: id, coordinates: point, residents: 40 };
+      const hint = data ? suggestPoint(data, point, { kind: "house", houseId: id }, "Выезд из дома", catalogs.config.snap_radius_m, "origin") : null;
+      if (hint) {
+        repositionDraft.current = previous || draft; setPlacement({ kind: "house", houseId: id }); setPointGuidance(hint); return;
+      }
+      setPointGuidance(null); setEditingHouse(draft);
       setPlacement(null);
     }
-  }, [placement, experiment.points, experiment.addedHouses, catalogs, data, drawingRoad, changeExperiment]);
+  }, [placement, experiment.points, experiment.addedHouses, experiment.parkingMode, catalogs, data, drawingRoad, changeExperiment]);
   const changeHouse = useCallback((id: string, patch: Partial<HouseDraft>) => {
     if (busyRef.current) return;
     changeExperiment({ addedHouses: experiment.addedHouses.map(h => h.house_id === id ? { ...h, ...patch } : h) });
-  }, [experiment.addedHouses, changeExperiment]);
+    if (patch.coordinates && data && catalogs) {
+      const hint = suggestPoint(data, patch.coordinates, { kind: "house", houseId: id }, "Выезд из дома", catalogs.config.snap_radius_m, "origin");
+      setPointGuidance(hint);
+      if (hint) { setPanelView("map"); setPlacement({ kind: "house", houseId: id }); }
+    }
+  }, [experiment.addedHouses, changeExperiment, data, catalogs]);
   const editHouse = (id: string) => {
     const house = experiment.addedHouses.find(item => item.house_id === id);
     if (!house) return;
@@ -236,12 +278,48 @@ function SimulatorWorkspace() {
   };
   const moveRoutePoint = useCallback((index: number, point: Coordinate) => {
     if (busyRef.current) return;
-    const points = [...experiment.points]; points[index] = point; changeExperiment({ points }); setPlacement(null);
-  }, [experiment.points, changeExperiment]);
+    const points = [...experiment.points]; points[index] = point; changeExperiment({ points });
+    const end = index === points.length - 1;
+    const hint = data && catalogs && !(end && experiment.parkingMode !== "none") ? suggestPoint(data, point, { kind: "route", index }, index === 0 ? "А" : end ? "Б" : `Через ${index}`, catalogs.config.snap_radius_m, index === 0 ? "origin" : end ? "destination" : "via") : null;
+    setPointGuidance(hint); setPlacement(hint ? { kind: "route", index } : null);
+  }, [experiment.points, experiment.parkingMode, catalogs, data, changeExperiment]);
+  const revealPointGuidance = (hint: PointGuidance) => {
+    setPointGuidance(hint); setEditingHouse(null); setEditingRoad(null); setPanelView("map");
+    if (hint.target.kind === "route") setPlacement({ kind: "route", index: hint.target.index });
+    else if (hint.target.kind === "house") setPlacement({ kind: "house", houseId: hint.target.houseId });
+    else {
+      if (drawingRoad?.road_id !== hint.target.roadId) {
+        const roadId = hint.target.roadId;
+        const road = experiment.addedRoads.find(road => road.road_id === roadId);
+        if (road) { setDrawingRoad({ ...road, points: [...road.points] }); roadReturn.current = panelView; }
+      }
+      setPlacement({ kind: "road" });
+    }
+  };
+  const applyPointGuidance = () => {
+    if (!pointGuidance || busyRef.current) return;
+    const { target, to } = pointGuidance;
+    setGuidanceFocus({ ...to });
+    setPointGuidance(null); setRoadError(null); setError("");
+    if (target.kind === "route") {
+      const points = [...experiment.points];
+      if (target.index >= points.length) return;
+      points[target.index] = to; changeExperiment({ points });
+      setPlacement(target.index === 0 && !points.at(-1) ? { kind: "route", index: points.length - 1 } : null);
+    } else if (target.kind === "house") {
+      if (repositionDraft.current?.house_id === target.houseId) setEditingHouse({ ...repositionDraft.current, coordinates: to });
+      else changeExperiment({ addedHouses: experiment.addedHouses.map(house => house.house_id === target.houseId ? { ...house, coordinates: to } : house) });
+      setPlacement(null);
+    } else if (drawingRoad?.road_id === target.roadId) {
+      const points = [...drawingRoad.points]; points[target.index] = to;
+      setDrawingRoad({ ...drawingRoad, points }); setPlacement({ kind: "road" });
+    }
+    notify(`Точка «${pointGuidance.label}» переставлена`);
+  };
   const resetAll = () => {
     setSelected(null); setScenarioType("none"); setPlacement(null); setEditingHouse(null); setEditingRoad(null); setDrawingRoad(null); setRoadError(null); setFactor(.5); setDemand(1.4);
     setExperiment({ ...initialExperiment(), vehicleCount: catalogs?.config.default_vehicle_count || 1000 });
-    setResetKey(k => k + 1); resetResult();
+    setResetKey(k => k + 1); setPointGuidance(null); setGuidanceFocus(null); resetResult();
     setPanelView("map");
   };
 
@@ -262,6 +340,8 @@ function SimulatorWorkspace() {
     if (invalidHouse) { setError("Укажите для нового дома целое число жильцов от 1 до 20 000."); editHouse(invalidHouse.house_id); return; }
     const invalidRoad = experiment.addedRoads.find(road => !road.name.trim() || !Number.isInteger(road.lanes) || road.lanes < 1 || road.lanes > 6);
     if (invalidRoad) { setError("Укажите название новой дороги и от 1 до 6 полос в каждом направлении."); editRoad(invalidRoad.road_id); return; }
+    const misplaced = catalogs ? firstMisplacedPoint(data, experiment, catalogs.config.snap_radius_m) : null;
+    if (misplaced) { revealPointGuidance(misplaced); return; }
     if (preset) { setSelected(segment || null); setScenarioType(type); }
     busyRef.current = true;
     setBusy(true); resetResult(); setPanelView("result");
@@ -270,7 +350,7 @@ function SimulatorWorkspace() {
         road_change: type === "closure" || type === "capacity_reduction" ? { scenario_type: type, segment_id: segment!.segment_id, ...(type === "capacity_reduction" ? { factor: preset?.parameters?.factor ?? factor } : {}) } : null,
         demand_factor: type === "demand_increase" ? preset?.parameters?.factor ?? demand : 1,
         personal_route: experiment.routeEnabled ? { origin: experiment.points[0], destination: experiment.points[experiment.points.length - 1], via: experiment.points.slice(1, -1), parking_mode: experiment.parkingMode, parking_id: experiment.parkingMode === "manual" ? experiment.parkingId : null } : null,
-        parking_occupancy: experiment.occupancy, housing: { add: experiment.addedHouses, remove: experiment.removedHouses }, added_roads: experiment.addedRoads };
+        parking_occupancy: experiment.occupancy, housing: { add: experiment.addedHouses.map(({ house_id, coordinates, residents }) => ({ house_id, coordinates, residents })), remove: experiment.removedHouses }, added_roads: experiment.addedRoads };
       const result = await api<Run>("/simulate", payload);
       setRun(result); setPhase("after");
       trackGoal("simulation_success");
@@ -278,6 +358,11 @@ function SimulatorWorkspace() {
       setPlacement(null);
       setEditingHouse(null); setEditingRoad(null);
       setFocus(f => f + 1);
+      if (catalogs && result.personal_route?.after.status === "unreachable" && result.personal_route.snapped_points.destination_error) {
+        const end = experiment.points.at(-1);
+        const hint = end ? suggestPoint(data, end, { kind: "route", index: experiment.points.length - 1 }, "Б", catalogs.config.snap_radius_m, "destination") : null;
+        if (hint) revealPointGuidance(hint);
+      }
       notify("Сценарий рассчитан");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Не удалось выполнить расчёт. Повторите попытку.");
@@ -346,15 +431,15 @@ function SimulatorWorkspace() {
     return () => cancelAnimationFrame(frame);
   }, [activePanel, run?.run_id, mobile, panelOpen]);
 
-  return <div className="app-shell" data-panel={panelView} data-mobile={mobile} data-tool={panelView === "map" ? placement?.kind || undefined : undefined}>
+  return <div className="app-shell" data-panel={panelView} data-mobile={mobile} data-guidance={panelView === "map" && !!pointGuidance || undefined} data-tool={panelView === "map" ? placement?.kind || undefined : undefined}>
     <header className="app-header">
-      <Link className="brand" href="/" aria-label="Эффект бабочки — главная"><span className="brand-mark"><Butterfly /></span><span><strong>Эффект бабочки</strong><small><span className={`live-dot ${!baseline || pendingBaseline ? "waiting" : ""}`} />Первая Речка · Владивосток</small></span></Link>
+      <Link className="brand" href="/" aria-label="402x402 — главная"><span className="brand-mark"><Butterfly /></span><span><strong>402x402</strong><small><span className={`live-dot ${!baseline || pendingBaseline ? "waiting" : ""}`} />Первая Речка · Владивосток</small></span></Link>
       <div className="model-status" role="status"><span className={`live-dot ${!baseline || pendingBaseline ? "waiting" : ""}`} /><span>{pendingBaseline && countValid ? "Обновляем количество машин" : baseline ? "Можно рассчитать изменения" : initialError ? "Нет соединения с моделью" : "Подключаем модель"}<small className="status-sub">{baseline ? `${baseline.metrics.trip_count} направлений · ${number(baseline.metrics.vehicle_count)} машин в расчёте` : "Реальная карта · выбранное число машин"}</small></span></div>
       <div className="header-actions"><AuthStatus /><span className="farpost">far<span>post</span><small>ВАЙБАТОН ’26</small></span><button className="icon-button theme-button" onClick={toggleTheme} aria-label={dark ? "Включить светлую тему" : "Включить тёмную тему"}>{dark ? <Sun size={19} /> : <Moon size={19} />}</button><button className="icon-button" onClick={() => setHelpOpen(true)} aria-label="Как это работает"><CircleHelp size={20} /></button></div>
     </header>
 
     <main className="map-workspace" aria-label="Симулятор дорожных изменений">
-      {data && currentState ? <RoadMap data={data} state={currentState} selected={inspectSegment || (scenarioType === "demand_increase" || scenarioType === "none" ? null : selected)} onSelect={selectSegment} phase={phase} onPhase={setPhase} hasResult={!!run} activeTrip={activeTrip} focus={focus} resetKey={resetKey} disabled={busy} catalogs={catalogs} experiment={mapExperiment} placement={panelView === "map" ? placement : null} onMapPoint={mapPoint} onMovePoint={moveRoutePoint} onCancelPlacement={cancelPlacement} onParking={id => { changeExperiment({ parkingMode: "manual", parkingId: id, routeEnabled: true }); setPanelView("scenario"); }} onHouse={demolishHouse} drawingRoad={drawingRoad} drawingErrorIndex={roadError?.index ?? null} onDisplayChange={changeExperiment} addedRoads={run?.added_roads || NO_ADDED_ROADS} onEditRoad={editRoad} editingHouseId={editingHouseId} onEditHouse={editHouse} onChangeHouse={changeHouse} onCloseHouse={() => closeHouse()} onRemoveHouse={id => { changeExperiment({ addedHouses: experiment.addedHouses.filter(h => h.house_id !== id) }); setEditingHouse(null); }} onRepositionHouse={id => beginPlacement({ kind: "house", houseId: id })} personal={run?.personal_route?.[phase] || null} parkingOccupancy={run?.applied_settings?.[phase === "before" ? "parking_occupancy_before" : "parking_occupancy_after"] || experiment.occupancy} hasHouseChanges={phase === "after" && !!run} mobile={mobile} dark={dark} reducedMotion={reducedMotion} /> : <MapSkeleton failed={!!initialError} message={initialError ? "Не удалось подключить модель" : "Подключаем модель района"} />}
+      {data && currentState ? <RoadMap data={data} state={currentState} selected={inspectSegment || (scenarioType === "demand_increase" || scenarioType === "none" ? null : selected)} onSelect={selectSegment} phase={phase} onPhase={setPhase} hasResult={!!run} activeTrip={activeTrip} focus={focus} resetKey={resetKey} disabled={busy} catalogs={catalogs} experiment={mapExperiment} placement={panelView === "map" ? placement : null} onMapPoint={mapPoint} onMovePoint={moveRoutePoint} onCancelPlacement={cancelPlacement} onParking={id => { changeExperiment({ parkingMode: "manual", parkingId: id, routeEnabled: true }); setPanelView("scenario"); }} onHouse={demolishHouse} drawingRoad={drawingRoad} drawingErrorIndex={roadError?.index ?? null} pointGuidance={panelView === "map" ? pointGuidance : null} guidanceFocus={guidanceFocus} onApplyGuidance={applyPointGuidance} onDismissGuidance={() => { setPointGuidance(null); setRoadError(null); }} onDisplayChange={changeExperiment} addedRoads={run?.added_roads || NO_ADDED_ROADS} onEditRoad={editRoad} editingHouseId={editingHouseId} onEditHouse={editHouse} onChangeHouse={changeHouse} onCloseHouse={() => closeHouse()} onRemoveHouse={id => { changeExperiment({ addedHouses: experiment.addedHouses.filter(h => h.house_id !== id) }); setEditingHouse(null); }} onRepositionHouse={id => beginPlacement({ kind: "house", houseId: id })} personal={run?.personal_route?.[phase] || null} parkingOccupancy={run?.applied_settings?.[phase === "before" ? "parking_occupancy_before" : "parking_occupancy_after"] || experiment.occupancy} hasHouseChanges={phase === "after" && !!run} mobile={mobile} dark={dark} reducedMotion={reducedMotion} /> : <MapSkeleton failed={!!initialError} message={initialError ? "Не удалось подключить модель" : "Подключаем модель района"} />}
 
       <button className="mobile-actions-trigger" hidden={panelView !== "map" || !!placement || !!editingHouse || !!editingRoad} disabled={busy || !data} onClick={() => setActionsOpen(true)} aria-haspopup="dialog"><Plus size={20} />Действия</button>
       <div className={`map-task-toolbar desktop-map-actions ${(panelView === "map" && !!placement || mobile && (panelOpen || editingHouse || editingRoad)) ? "is-covered" : ""}`} aria-label="Действия на карте"><button aria-label="Мой маршрут" disabled={busy || !data} onClick={() => { changeExperiment({ routeEnabled: true }); beginPlacement({ kind: "route", index: 0 }); }}><Navigation size={17} />Маршрут</button><button aria-label="Добавить дом" disabled={busy || !data || experiment.addedHouses.length >= 10} onClick={() => { changeExperiment({ showHouses: true }); beginPlacement({ kind: "house" }); }}><HouseIcon size={17} />Добавить дом</button><button disabled={busy || !data || experiment.addedRoads.length >= 5} onClick={() => startRoad()}><Plus size={17} />Своя дорога</button><button aria-label="Снести дом" disabled={busy || !catalogs?.houses.length} onClick={() => { changeExperiment({ showHouses: true }); beginPlacement({ kind: "demolish" }); }}><Trash2 size={17} />Снести дом</button><button className="toolbar-demo" disabled={busy || !catalogs} onClick={() => { if (!catalogs) return; const demo = catalogs.demo_personal_route; changeExperiment({ routeEnabled: true, points: [demo.origin, ...demo.via, demo.destination], parkingMode: "auto" }); setPanelView("scenario"); }}><Route size={17} />Пример А → Б + P</button></div>
@@ -364,7 +449,7 @@ function SimulatorWorkspace() {
       <div className={`overview-strip ${(panelView === "map" && !!placement || mobile && (panelOpen || editingHouse || editingRoad)) ? "is-covered" : ""}`} aria-label="Показатели выбранного состояния"><div className="overview-place"><MapPin size={16} /><span>Первая Речка<small className="summary-caption">{phase === "after" ? "После изменения" : "Исходное движение"}</small></span></div><div className="overview-metric"><Clock3 size={17} /><span><strong>{currentState ? shortTime(currentState.metrics.average_time_s) : "—"}</strong><small>среднее время</small></span></div><div className="overview-metric"><Route size={17} /><span><strong>{currentState ? distance(currentState.metrics.average_length_m) : "—"}</strong><small>средняя длина</small></span></div><div className="overview-metric"><Users size={17} /><span><strong>{currentState ? number(currentState.metrics.vehicle_count) : "—"}</strong><small>машин в расчёте</small></span></div><button className="overview-open icon-button" aria-label="Открыть настройки сценария" onClick={() => setPanelView("scenario")}><ChevronUp size={21} /></button></div>
 
       {initialError && <section className="connection-error" role="alert"><span className="empty-illustration"><Activity size={28} /></span><h2>Модель пока не подключена</h2><p>{initialError}</p><button className="primary-button" onClick={() => setRetry(r => r + 1)}><RefreshCw size={16} />Повторить подключение</button></section>}
-      {panelView === "map" && placement?.kind === "road" && drawingRoad && <div className="road-draw-controls" aria-label="Рисование дороги"><span><Route size={17} /><strong>{drawingRoad.points.length < 2 ? "Поставьте начало и конец" : `${distance(roadLength(drawingRoad.points))} · ${drawingRoad.points.length} точек`}</strong></span>{roadError && <p className="road-tool-error" role="alert">{roadError.text}</p>}<div><button className="quiet-action" disabled={!drawingRoad.points.length} onClick={() => { setRoadError(null); setDrawingRoad(previous => previous ? { ...previous, points: previous.points.slice(0, -1) } : null); }}><Undo2 size={16} />Назад</button><button className="primary-button" disabled={drawingRoad.points.length < 2} onClick={finishRoad}><Check size={17} />Готово</button></div><button className="road-cancel text-button" onClick={cancelPlacement}>Отменить рисование</button></div>}
+      {panelView === "map" && placement?.kind === "road" && drawingRoad && <div className="road-draw-controls" aria-label="Рисование дороги"><span><Route size={17} /><strong>{drawingRoad.points.length < 2 ? "Поставьте начало и конец" : `${distance(roadLength(drawingRoad.points))} · ${drawingRoad.points.length} точек`}</strong></span>{roadError && !pointGuidance && <p className="road-tool-error" role="alert">{roadError.text}</p>}<div><button className="quiet-action" disabled={!drawingRoad.points.length} onClick={() => { setPointGuidance(null); setRoadError(null); setDrawingRoad(previous => previous ? { ...previous, points: previous.points.slice(0, -1) } : null); }}><Undo2 size={16} />Назад</button><button className="primary-button" disabled={drawingRoad.points.length < 2} onClick={finishRoad}><Check size={17} />Готово</button></div><button className="road-cancel text-button" onClick={cancelPlacement}>Отменить рисование</button></div>}
     </main>
 
     <AdaptiveSheet className="control-sheet" label={activePanel === "scenario" ? "Настройки сценария" : "Результат сценария"} open={panelOpen} mobile={mobile} onClose={() => setPanelView("map")}>
@@ -415,7 +500,7 @@ function SimulatorWorkspace() {
     </AdaptiveSheet>
 
     <AppDialog className="house-sheet editor-dialog" open={!!editingHouse} label="Редактор дома" onClose={() => closeHouse()}>
-      {editingHouse && catalogs && <HouseEditor house={editingHouse} catalogs={catalogs} disabled={busy}
+      {editingHouse && catalogs && <HouseEditor house={editingHouse} disabled={busy}
         onChange={patch => setEditingHouse(previous => previous ? { ...previous, ...patch } : null)}
         onClose={() => closeHouse()} onApply={() => closeHouse(true)}
         onRemove={() => { changeExperiment({ addedHouses: experiment.addedHouses.filter(h => h.house_id !== editingHouse.house_id) }); closeHouse(); }}
@@ -437,7 +522,7 @@ function SimulatorWorkspace() {
       <div className="editor-heading" data-sheet-handle><strong>Действия на карте</strong><button className="icon-button" aria-label="Закрыть действия" onClick={() => setActionsOpen(false)}><X size={20} /></button></div>
       <div className="dialog-scroll action-list">
         <button aria-label="Мой маршрут" disabled={busy || !data} onClick={() => { changeExperiment({ routeEnabled: true }); beginPlacement({ kind: "route", index: 0 }); }}><Navigation size={22} /><span>Мой маршрут<small>Выберите начало А и конец Б</small></span><ChevronRight size={18} /></button>
-        <button aria-label="Добавить дом" disabled={busy || !data || experiment.addedHouses.length >= 10} onClick={() => { changeExperiment({ showHouses: true }); beginPlacement({ kind: "house" }); }}><HouseIcon size={22} /><span>Добавить дом<small>Укажите жителей и направление поездок</small></span><ChevronRight size={18} /></button>
+        <button aria-label="Добавить дом" disabled={busy || !data || experiment.addedHouses.length >= 10} onClick={() => { changeExperiment({ showHouses: true }); beginPlacement({ kind: "house" }); }}><HouseIcon size={22} /><span>Добавить дом<small>Укажите жителей — направления распределятся автоматически</small></span><ChevronRight size={18} /></button>
         <button aria-label={drawingRoad ? "Продолжить дорогу" : "Своя дорога"} disabled={busy || !data || !drawingRoad && experiment.addedRoads.length >= 5} onClick={() => { if (drawingRoad) { setPlacement({ kind: "road" }); setPanelView("map"); setActionsOpen(false); } else startRoad(); }}><Route size={22} /><span>{drawingRoad ? "Продолжить дорогу" : "Своя дорога"}<small>{drawingRoad ? `${drawingRoad.points.length} точек в черновике` : "Соедините два перекрёстка"}</small></span><ChevronRight size={18} /></button>
         <button aria-label="Снести дом" disabled={busy || !catalogs?.houses.length} onClick={() => { changeExperiment({ showHouses: true }); beginPlacement({ kind: "demolish" }); }}><Trash2 size={22} /><span>Снести дом<small>Убрать машины жителей из сценария</small></span><ChevronRight size={18} /></button>
       </div>
@@ -445,7 +530,7 @@ function SimulatorWorkspace() {
 
     <AppDialog className="help-dialog" open={helpOpen} label="Как это работает" onClose={() => setHelpOpen(false)}>
       <div className="editor-heading" data-sheet-handle><strong>Как это работает</strong><button className="dialog-close icon-button" aria-label="Закрыть описание" onClick={() => setHelpOpen(false)}><X size={21} /></button></div>
-      <div className="help-content dialog-scroll"><span className="help-brand"><Butterfly /></span><span className="eyebrow">ЭФФЕКТ БАБОЧКИ · FARPOST</span><h2>Город — это связи</h2><p>Измените условия на карте и проследите, как одно решение меняет маршруты всего района.</p><ol className="help-steps"><li><span>1</span><div><strong>Выберите машины и маршрут</strong><p>Выберите количество авто и поставьте точки поездки.</p></div></li><li><span>2</span><div><strong>Соедините условия</strong><p>Погода, парковки, дома и дороги работают вместе.</p></div></li><li><span>3</span><div><strong>Сравните результат</strong><p>Личная поездка и район показывают «До / После».</p></div></li></ol><div className="help-model"><Info size={18} /><p>Карта — OpenStreetMap. Количество машин, занятость парковок и вместимость дорог заданы для эксперимента. Это эксперимент, а не прогноз реальных пробок.</p></div><ExperimentHelp catalogs={catalogs} /><button className="primary-button" onClick={() => setHelpOpen(false)}>Начать эксперимент<ArrowRight size={17} /></button></div>
+      <div className="help-content dialog-scroll"><span className="help-brand"><Butterfly /></span><span className="eyebrow">402x402 · FARPOST</span><h2>Город — это связи</h2><p>Измените условия на карте и проследите, как одно решение меняет маршруты всего района.</p><ol className="help-steps"><li><span>1</span><div><strong>Выберите машины и маршрут</strong><p>Выберите количество авто и поставьте точки поездки.</p></div></li><li><span>2</span><div><strong>Соедините условия</strong><p>Погода, парковки, дома и дороги работают вместе.</p></div></li><li><span>3</span><div><strong>Сравните результат</strong><p>Личная поездка и район показывают «До / После».</p></div></li></ol><div className="help-model"><Info size={18} /><p>Карта — OpenStreetMap. Количество машин, занятость парковок и вместимость дорог заданы для эксперимента. Это эксперимент, а не прогноз реальных пробок.</p></div><ExperimentHelp catalogs={catalogs} /><button className="primary-button" onClick={() => setHelpOpen(false)}>Начать эксперимент<ArrowRight size={17} /></button></div>
     </AppDialog>
   </div>;
 }

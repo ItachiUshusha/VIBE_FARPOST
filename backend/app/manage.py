@@ -52,7 +52,8 @@ def main():
         return
     if args.command == "legal-template":
         source = Path(__file__).resolve().parents[1] / "legal/drafts"
-        template_data = {"operator": {"name": "", "contact": "", "jurisdiction": ""}, "documents": {slug: (source / (slug + ".txt")).read_text(encoding="utf-8") for slug in TITLES}}
+        operator = json.loads((source.parent / "operator.json").read_text(encoding="utf-8"))
+        template_data = {"operator": operator, "documents": {slug: (source / (slug + ".txt")).read_text(encoding="utf-8") for slug in TITLES}}
         destination = Path(args.output)
         if destination.exists():
             raise ValueError("Файл уже существует. Он не будет перезаписан.")
