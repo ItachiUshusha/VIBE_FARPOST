@@ -80,9 +80,10 @@ export type State = {
 };
 export type Delta = { before: number | null; after: number | null; absolute: number | null; percent: number | null };
 export type ScenarioType = "closure" | "capacity_reduction" | "demand_increase" | "none";
-export type Preset = { preset_id: string; name: string; description: string; scenario_type: ScenarioType; segment_id: string };
+export type Preset = { preset_id: string; name: string; description: string; scenario_type: ScenarioType; segment_id: string; parameters?: { factor?: number } };
 export type Run = {
   run_id: string;
+  created_at: string;
   dataset_version: string;
   closed_edge_ids: string[];
   before: State;

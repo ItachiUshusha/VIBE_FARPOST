@@ -16,6 +16,8 @@ export async function ready(page) {
   await page.locator(".map-canvas canvas, .svg-map").first().waitFor({ timeout: 60000 });
   await page.locator(".map-loading").waitFor({ state: "hidden", timeout: 45000 });
   await page.waitForFunction(() => [...document.querySelectorAll(".overview-metric strong")].length === 3 && [...document.querySelectorAll(".overview-metric strong")].every(el => el.textContent !== "—"));
+  const necessary = page.getByRole("button", { name: "Только необходимые", exact: true });
+  if (await necessary.isVisible()) await necessary.click();
 }
 export async function openScenario(page) {
   if (await page.locator(".mobile-tabbar").isVisible()) {

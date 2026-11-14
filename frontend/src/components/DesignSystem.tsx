@@ -9,6 +9,7 @@ import Framework7React, { App, Sheet, Toolbar, Preloader, f7 } from "framework7-
 import { domAnimation, LazyMotion, MotionConfig, useReducedMotion } from "motion/react";
 import { onCLS, onINP, onLCP } from "web-vitals";
 
+// eslint-disable-next-line react-hooks/rules-of-hooks -- Framework7.use registers plugins; it is not a React hook.
 Framework7.use([Framework7React, SheetModule, ToastModule, PreloaderModule]);
 
 declare global {
@@ -25,7 +26,7 @@ export function DesignProvider({ children }: { children: ReactNode }) {
     onINP(report, { reportAllChanges: true });
   }, []);
   return <MotionConfig reducedMotion="user"><LazyMotion features={domAnimation} strict>
-    <App name="Эффект бабочки" theme="ios" darkMode="auto" className="design-app">{children}</App>
+    <App name="Эффект бабочки" theme="ios" darkMode="auto" clicks={{ externalLinks: "a" }} className="design-app">{children}</App>
   </LazyMotion></MotionConfig>;
 }
 

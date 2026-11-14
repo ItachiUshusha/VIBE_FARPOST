@@ -244,7 +244,7 @@ def test_combined_real_graph_scenario_repeats_with_shared_snap_and_persistence(d
     with TestClient(create_app(settings, db)) as client:
         assert client.get("/api/runs/" + first["run_id"]).json() == first
         explanation = client.post("/api/analyze", json={"run_id": first["run_id"]}).json()
-        assert "180" in explanation["text"]
+        assert "поиск места 3 мин" in explanation["text"]
         assert "980" in explanation["text"]
 
 

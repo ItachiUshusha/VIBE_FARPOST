@@ -16,6 +16,8 @@ from .schemas import AnalyzeRequest, SimulationRequest
 from .simulation import SimulationEngine
 from .catalogs import attach_catalogs
 from .scenarios import ScenarioService
+from .accounts import router as accounts_router, migrate as migrate_accounts, current_user, csrf, SESSION_COOKIE
+from .security import PrivateResponseMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +61,11 @@ def create_app(settings: Settings | None = None, database=None) -> FastAPI:
         else:
             app.state.db = database
         app.state.engine = None
+        app.state.security_ready = False
         try:
             app.state.db.command("ping")
+            migrate_accounts(app.state.db)
+            app.state.security_ready = True
             initialize(app)
         except (PyMongoError, ValueError, OSError):
             logger.exception("Инициализация дорожного набора не завершена")
@@ -69,8 +74,20 @@ def create_app(settings: Settings | None = None, database=None) -> FastAPI:
             client.close()
 
     app = FastAPI(title="Эффект бабочки", version="1.0.0", lifespan=lifespan)
+    app.state.settings = settings
+    app.state.security_ready = False
+    app.include_router(accounts_router)
+    from .legal import router as legal_router
+    app.include_router(legal_router)
+    from .administration import router as admin_router
+    app.include_router(admin_router)
+    app.add_middleware(PrivateResponseMiddleware)
     app.add_middleware(CORSMiddleware, allow_origins=[o.strip() for o in settings.cors_origins.split(",") if o.strip()],
-                       allow_credentials=False, allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
+                       allow_credentials=False, allow_methods=["GET", "POST", "PATCH"], allow_headers=["Content-Type", "X-CSRF-Token"])
+
+    @app.exception_handler(PyMongoError)
+    async def database_error(_request, _exc):
+        return JSONResponse(status_code=503, content={"detail": "База данных временно недоступна. Повторите запрос позже."})
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(_request, exc):
@@ -124,7 +141,7 @@ def create_app(settings: Settings | None = None, database=None) -> FastAPI:
     def scenarios(request: Request, engine=Depends(ready)):
         try:
             return {"dataset_version": engine.dataset["version"], "scenarios": list(request.app.state.db.scenario_presets.find(
-                {"dataset_version": engine.dataset["version"]}, {"_id": 0}).sort("preset_id", 1))}
+                {"dataset_version": engine.dataset["version"], "archived": {"$ne": True}}, {"_id": 0}).sort("preset_id", 1))}
         except PyMongoError:
             raise HTTPException(503, "Не удалось загрузить сценарии из MongoDB.")
 
@@ -137,6 +154,9 @@ def create_app(settings: Settings | None = None, database=None) -> FastAPI:
 
     @app.post("/api/simulate")
     def simulate(payload: SimulationRequest, request: Request, engine=Depends(ready)):
+        user = current_user(request) if request.cookies.get(SESSION_COOKIE) else None
+        if user:
+            csrf(request)
         start = time.perf_counter()
         try:
             result = request.app.state.scenarios.simulate(payload.model_dump())
@@ -147,7 +167,7 @@ def create_app(settings: Settings | None = None, database=None) -> FastAPI:
         result.update({"run_id": str(uuid4()), "created_at": datetime.now(timezone.utc).isoformat(),
                        "input": payload.model_dump(), "calculation_ms": round((time.perf_counter() - start) * 1000, 1)})
         try:
-            request.app.state.db.simulation_runs.insert_one({"_id": result["run_id"], **result})
+            request.app.state.db.simulation_runs.insert_one({"_id": result["run_id"], **result, "_owner_user_id": user["_id"] if user else None})
         except PyMongoError:
             raise HTTPException(503, "Не удалось сохранить расчёт в MongoDB. Проверьте соединение и повторите попытку.")
         return result
@@ -159,6 +179,13 @@ def create_app(settings: Settings | None = None, database=None) -> FastAPI:
             raise HTTPException(503, "Не удалось прочитать сохранённый расчёт.")
         if not run:
             raise HTTPException(404, "Сохранённый расчёт не найден.")
+        owner = run.pop("_owner_user_id", None)
+        if owner:
+            user = current_user(request)
+            if not user or (user["_id"] != owner and user["role"] != "admin"):
+                raise HTTPException(404, "Сохранённый расчёт не найден.")
+        for key in ["admin_note", "admin_version", "archived"]:
+            run.pop(key, None)
         return run
 
     @app.get("/api/runs/{run_id}")

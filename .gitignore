@@ -21,4 +21,6 @@ artifacts/
 .local/
 *.tsbuildinfo
 .DS_Store
+/backend/data/legal-approved.json
+/backend/data/legal-approved.tmp
 Thumbs.db

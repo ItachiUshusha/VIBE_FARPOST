@@ -13,12 +13,13 @@ services:
   backend:
     build: ./backend
     restart: unless-stopped
+    env_file: .env
     environment:
       MONGODB_URI: mongodb://mongo:27017
       MONGODB_DATABASE: ${MONGODB_DATABASE:-farpost_butterfly}
       DATASET_VERSION: pervaya-rechka-v1
       AUTO_SEED: "true"
-      CORS_ORIGINS: http://localhost:${FRONTEND_PORT:-3000},http://127.0.0.1:${FRONTEND_PORT:-3000}
+      CORS_ORIGINS: ${PUBLIC_ORIGIN:-http://localhost:3000},http://127.0.0.1:${FRONTEND_PORT:-3000}
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     depends_on:
@@ -36,6 +37,13 @@ services:
       args:
         API_PROXY_URL: http://backend:8000
     restart: unless-stopped
+    environment:
+      API_PROXY_URL: http://backend:8000
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:3000}
+      METRICA_COUNTER_ID: ${METRICA_COUNTER_ID:-}
+      SEO_INDEXING_ENABLED: ${SEO_INDEXING_ENABLED:-false}
+      GOOGLE_SITE_VERIFICATION: ${GOOGLE_SITE_VERIFICATION:-}
+      YANDEX_SITE_VERIFICATION: ${YANDEX_SITE_VERIFICATION:-}
     ports:
       - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
     depends_on:

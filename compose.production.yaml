@@ -1,0 +1,60 @@
+name: farpost-butterfly
+services:
+  mongo:
+    image: mongo:8.0
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017
+      PUBLIC_ORIGIN: https://${SITE_DOMAIN:?Set SITE_DOMAIN in .env}
+      CORS_ORIGINS: https://${SITE_DOMAIN:?Set SITE_DOMAIN in .env}
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        API_PROXY_URL: http://backend:8000
+    environment:
+      API_PROXY_URL: http://backend:8000
+      PUBLIC_ORIGIN: https://${SITE_DOMAIN:?Set SITE_DOMAIN in .env}
+      METRICA_COUNTER_ID: ${METRICA_COUNTER_ID:-}
+      SEO_INDEXING_ENABLED: ${SEO_INDEXING_ENABLED:-false}
+      GOOGLE_SITE_VERIFICATION: ${GOOGLE_SITE_VERIFICATION:-}
+      YANDEX_SITE_VERIFICATION: ${YANDEX_SITE_VERIFICATION:-}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+  gateway:
+    image: caddy:2
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?Set SITE_DOMAIN in .env}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    depends_on: [frontend]
+volumes:
+  mongo_data:
+  caddy_data:
+  caddy_config:

@@ -1,4 +1,5 @@
 const BASE = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
+import { csrfHeaders } from "./account-api";
 
 export async function api<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
   let response: Response;
@@ -7,7 +8,7 @@ export async function api<T>(path: string, body?: unknown, signal?: AbortSignal)
   try {
     response = await fetch(`${BASE}/api${path}`, {
       method: body === undefined ? "GET" : "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(body === undefined ? {} : await csrfHeaders()) },
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: combinedSignal,
       cache: "no-store",
