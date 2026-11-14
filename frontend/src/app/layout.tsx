@@ -1,11 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 import "./services.css";
+import "./mobile-ux.css";
 import SiteServices from "@/components/SiteServices";
 import { indexingEnabled, publicOrigin } from "@/lib/server-config";
 
 export const dynamic = "force-dynamic";
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 export function generateMetadata(): Metadata { return {
   metadataBase: new URL(publicOrigin()),
   title: "Эффект бабочки — Первая Речка",

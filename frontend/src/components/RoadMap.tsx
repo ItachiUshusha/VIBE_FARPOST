@@ -5,6 +5,7 @@ import maplibregl, { type GeoJSONSource, type Map as LibreMap, type StyleSpecifi
 import type { Feature, FeatureCollection, LineString, Point } from "geojson";
 import { Box, Check, Layers2, LocateFixed, Minus, Pause, Play, Plus, RotateCcw, Route, X } from "lucide-react";
 import type { Catalogs, Coordinate, Experiment, HouseDraft, MapData, PersonalPhase, Placement, RoadDraft, ScenarioRoad, Segment, State } from "@/lib/types";
+import AppDialog from "./AppDialog";
 import { roadLanes } from "@/lib/roads";
 
 type Props = {
@@ -34,6 +35,9 @@ type Props = {
   onRemoveHouse: (id: string) => void;
   onRepositionHouse: (id: string) => void;
   drawingRoad: RoadDraft | null;
+  drawingErrorIndex: number | null;
+  mobile: boolean;
+  onDisplayChange: (patch: Partial<Experiment>) => void;
   addedRoads: ScenarioRoad[];
   onEditRoad: (id: string) => void;
   personal: PersonalPhase | null;
@@ -132,7 +136,7 @@ function mapStyle(): StyleSpecification {
       { id: "new-road-preview", type: "line", source: "new-roads", filter: ["==", ["get", "built"], false], layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": ["get", "color"], "line-width": 4, "line-dasharray": [2, 1] } },
       { id: "new-road-hit", type: "line", source: "new-roads", paint: { "line-width": 20, "line-opacity": 0 } },
       { id: "new-road-labels", type: "symbol", source: "new-roads", layout: { "symbol-placement": "line", "text-field": ["get", "name"], "text-font": ["Open Sans Semibold"], "text-size": 12 }, paint: { "text-color": "#c7ed83", "text-halo-color": "#161d1b", "text-halo-width": 2 } },
-      { id: "road-draft-points", type: "circle", source: "road-draft-points", paint: { "circle-radius": 6, "circle-color": "#c7ed83", "circle-stroke-color": "#141a19", "circle-stroke-width": 2 } },
+      { id: "road-draft-points", type: "circle", source: "road-draft-points", paint: { "circle-radius": 6, "circle-color": ["case", ["boolean", ["get", "invalid"], false], "#ff6c75", "#c7ed83"], "circle-stroke-color": "#141a19", "circle-stroke-width": 2 } },
       { id: "personal-halo", type: "line", source: "personal", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#b4caff", "line-width": 11, "line-opacity": .2 } },
       { id: "personal-route", type: "line", source: "personal", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#b4caff", "line-width": 4 } },
       { id: "walking-route", type: "line", source: "walking", paint: { "line-color": "#79d9c7", "line-width": 3, "line-dasharray": [1, 1.5] } },
@@ -291,8 +295,8 @@ export default function RoadMap(props: Props) {
   useEffect(() => {
     if (!ready || !map.current) return;
     (map.current.getSource("new-roads") as GeoJSONSource).setData(customRoadFeatures);
-    (map.current.getSource("road-draft-points") as GeoJSONSource).setData({ type: "FeatureCollection", features: (props.drawingRoad?.points || []).map((point): Feature<Point> => ({ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [point.lon, point.lat] } })) });
-  }, [ready, customRoadFeatures, props.drawingRoad]);
+    (map.current.getSource("road-draft-points") as GeoJSONSource).setData({ type: "FeatureCollection", features: (props.drawingRoad?.points || []).map((point, index): Feature<Point> => ({ type: "Feature", properties: { invalid: index === props.drawingErrorIndex }, geometry: { type: "Point", coordinates: [point.lon, point.lat] } })) });
+  }, [ready, customRoadFeatures, props.drawingRoad, props.drawingErrorIndex]);
   useEffect(() => {
     if (!ready || !map.current) return;
     (map.current.getSource("house-areas") as GeoJSONSource).setData({ type: "FeatureCollection", features: (props.experiment.showHouses ? props.catalogs?.houses || [] : []).flatMap(house => house.geometry ? [{ type: "Feature" as const, geometry: house.geometry, properties: { house_id: house.house_id, color: mapColor((!props.hasResult || props.hasHouseChanges) && props.experiment.removedHouses.includes(house.house_id) ? "#f18b7d" : "#c7ed83", props.dark) } }] : []) });
@@ -341,12 +345,12 @@ export default function RoadMap(props: Props) {
         event.stopPropagation();
         if (propsRef.current.placement && !propsRef.current.disabled) propsRef.current.onMapPoint({ lon: point.lon, lat: point.lat });
       });
-      const marker = new maplibregl.Marker({ element, draggable: !props.disabled }).setLngLat([point.lon, point.lat]).addTo(map.current!);
+      const marker = new maplibregl.Marker({ element, draggable: !props.disabled && !props.placement }).setLngLat([point.lon, point.lat]).addTo(map.current!);
       marker.on("dragend", () => { const point = marker.getLngLat(); propsRef.current.onMovePoint(index, { lon: point.lng, lat: point.lat }); });
       routeMarkers.current.push(marker);
     });
     return () => routeMarkers.current.forEach(marker => marker.remove());
-  }, [ready, props.experiment.points, props.experiment.routeEnabled, props.disabled]);
+  }, [ready, props.experiment.points, props.experiment.routeEnabled, props.disabled, props.placement]);
 
   useEffect(() => {
     houseMarkers.current.forEach(marker => marker.remove()); houseMarkers.current = [];
@@ -480,22 +484,34 @@ export default function RoadMap(props: Props) {
       </div>
       <div className="map-label"><span className="map-kicker">ВЛАДИВОСТОК</span><strong>Первая Речка</strong><span>Одно решение. Десятки новых путей.</span></div>
       {props.placement && <div className="placement-hint" role="status"><span>{props.placement.kind === "road" ? props.drawingRoad?.points.length ? props.drawingRoad.points.length >= 12 ? "Достигнут предел: 12 точек. Нажмите «Готово»" : "Добавляйте повороты и конец дороги, затем нажмите «Готово»" : "Поставьте начало новой дороги рядом с перекрёстком" : props.placement.kind === "demolish" ? "Нажмите на выделенный дом: машины его жителей исчезнут из сценария" : props.placement.kind === "house" ? props.placement.houseId ? "Выберите новое положение дома" : "Нажмите на карту — появится дом с настройками" : props.placement.index === 0 ? "Поставьте точку А на карте" : props.placement.index === props.experiment.points.length - 1 ? "Поставьте точку Б на карте" : `Поставьте точку «Через ${props.placement.index}»`}</span><button onClick={props.onCancelPlacement} aria-label="Отменить выбор точки"><X size={14} /></button></div>}
-      {!mapError && <div className="map-controls">
+      <div className="map-controls">
+        {!mapError && <>
         <div className="control-stack"><button aria-label="Приблизить карту" title="Приблизить" onClick={() => map.current?.zoomIn()}><Plus size={18} /></button><button aria-label="Отдалить карту" title="Отдалить" onClick={() => map.current?.zoomOut()}><Minus size={18} /></button></div>
         <button className="map-control" aria-label="Начальный вид карты" title="Вернуться к Первой Речке" onClick={resetView}><LocateFixed size={18} /></button>
         <button className={`map-control pitch-control ${pitched ? "on" : ""}`} aria-label="Наклонить карту 2.5D" aria-pressed={pitched} onClick={() => { map.current?.easeTo({ pitch: pitched ? 0 : 52, duration: props.reducedMotion ? 0 : 350 }); setPitched(!pitched); }}><Box size={18} /></button>
-        <button className={`map-control ${showLayers ? "on" : ""}`} aria-label="Настроить слои карты" aria-expanded={showLayers} onClick={() => setShowLayers(!showLayers)}><Layers2 size={18} /></button>
-      </div>}
-      {showLayers && <div className="layers-panel"><div className="layers-title">Слои карты<button className="icon-button" aria-label="Закрыть слои" onClick={() => setShowLayers(false)}><X size={14} /></button></div>
+        </>}
+        <button className={`map-control settings-map-control ${showLayers ? "on" : ""}`} aria-label="Настроить слои карты" aria-expanded={showLayers} onClick={() => setShowLayers(!showLayers)}><Layers2 size={18} /></button>
+      </div>
+      <AppDialog className="map-settings-dialog" open={showLayers} onClose={() => setShowLayers(false)} label="Настройки карты">
+        <div className="editor-heading" data-sheet-handle><strong>Настройки карты</strong><button className="icon-button" aria-label="Закрыть слои" onClick={() => setShowLayers(false)}><X size={20} /></button></div>
+        <div className="dialog-scroll map-settings-content">
+          {!mapError && <div className="settings-map-buttons"><button className="quiet-action" onClick={() => map.current?.zoomOut()} aria-label="Отдалить карту"><Minus size={18} />Меньше</button><button className="quiet-action" onClick={() => map.current?.zoomIn()} aria-label="Приблизить карту"><Plus size={18} />Больше</button><button className="quiet-action" onClick={() => { resetView(); setShowLayers(false); }}><LocateFixed size={18} />Начальный вид карты</button></div>}
         <label><input type="checkbox" checked={showFlow} onChange={e => setShowFlow(e.target.checked)} />Нагрузка на дороги</label>
         <label><input type="checkbox" checked={showBuildings} onChange={e => { setShowBuildings(e.target.checked); map.current?.setLayoutProperty("buildings", "visibility", e.target.checked ? "visible" : "none"); }} />Здания и кварталы</label>
         <label><input type="checkbox" checked={!scheme} onChange={e => { setScheme(!e.target.checked); map.current?.setLayoutProperty("basemap", "visibility", e.target.checked ? "visible" : "none"); }} />Подложка OpenStreetMap</label>
         <label><input type="checkbox" checked={economy} onChange={event => setEconomy(event.target.checked)} />Экономить ресурсы</label>
         <small>Экономный режим уменьшает детализацию и частоту анимации. Схема работает без интернета.</small>
-      </div>}
+
+          <label><input type="checkbox" checked={props.experiment.showParkings} onChange={event => props.onDisplayChange({ showParkings: event.target.checked })} />Парковки</label>
+          <label><input type="checkbox" checked={props.experiment.showHouses} onChange={event => props.onDisplayChange({ showHouses: event.target.checked })} />Дома в расчёте</label>
+          {props.mobile && <button className="quiet-action" disabled={props.reducedMotion} onClick={() => setPlaying(!playing)} aria-label={playing ? "Приостановить анимацию" : "Продолжить анимацию"}>{playing ? <Pause size={18} /> : <Play size={18} />}Анимация машин: {playing ? "включена" : "на паузе"}</button>}
+          {props.reducedMotion && <p className="field-hint">Анимация отключена системной настройкой уменьшения движения.</p>}
+          <div className="settings-legend"><strong>Нагрузка на дороги</strong><span><i className="legend-dot low" />Свободно</span><span><i className="legend-dot elevated" />Много машин</span><span><i className="legend-dot high" />Плотный поток</span><span><i className="closed-line" />Перекрыто</span></div>
+        </div>
+      </AppDialog>
       <div className="map-compass" aria-hidden="true"><span>С</span><i /></div>
       {hover && !props.disabled && <div className="map-tooltip" style={{ left: (container.current?.offsetLeft || 0) + Math.min(hover.x + 16, (container.current?.clientWidth || 800) - 235), top: Math.max(hover.y - 60, 70) }}><strong>{hover.name}</strong><span>{hover.direction}</span></div>}
-      <div className="map-bottom">{!mapError ? <button className={`animation-toggle ${playing ? "on" : ""}`} disabled={props.reducedMotion} title={props.reducedMotion ? "Анимация отключена настройкой уменьшения движения" : undefined} onClick={() => setPlaying(!playing)} aria-label={playing ? "Приостановить анимацию" : "Продолжить анимацию"}>{playing ? <Pause size={13} fill="currentColor" /> : <Play size={13} fill="currentColor" />}<span>{playing ? "Движение машин" : "Анимация на паузе"}</span></button> : <span className="map-mode">Схема без WebGL</span>}
+      <div className="map-bottom">{!mapError && !props.mobile ? <button className={`animation-toggle ${playing ? "on" : ""}`} disabled={props.reducedMotion} title={props.reducedMotion ? "Анимация отключена настройкой уменьшения движения" : undefined} onClick={() => setPlaying(!playing)} aria-label={playing ? "Приостановить анимацию" : "Продолжить анимацию"}>{playing ? <Pause size={13} fill="currentColor" /> : <Play size={13} fill="currentColor" />}<span>{playing ? "Движение машин" : "Анимация на паузе"}</span></button> : mapError ? <span className="map-mode">Схема без WebGL</span> : null}
         <span className="map-mode">{mapError ? "Схема SVG" : scheme ? "Локальная схема" : "Карта OSM"}{tileError && <Check size={12} />}</span></div>
       {props.disabled && <div className="calculation-overlay"><span className="spinner" /><span>Ищем новые пути<span className="loading-dots">…</span></span></div>}
     </div>
@@ -547,7 +563,7 @@ function SvgFallback({ data, state, selected, onSelect, disabled, activeTrip, fo
         const points = snapshot?.geometry.coordinates || road.points.map(point => [point.lon, point.lat]);
         return <polyline key={road.road_id} points={points.map(project).join(" ")} fill="none" stroke={mapColor("#c7ed83", extras.dark)} strokeWidth={5} strokeDasharray={snapshot ? undefined : "7 4"} vectorEffect="non-scaling-stroke" strokeLinecap="round" onClick={event => { if (!extras.placement && !disabled) { event.stopPropagation(); extras.onEditRoad(road.road_id); } }}><title>{road.name} · {road.lanes} полос в каждом направлении</title></polyline>;
       })}
-      {extras.drawingRoad && <><polyline points={extras.drawingRoad.points.map(point => project([point.lon, point.lat])).join(" ")} fill="none" stroke={mapColor("#c7ed83", extras.dark)} strokeWidth={4} strokeDasharray="7 4" vectorEffect="non-scaling-stroke" />{extras.drawingRoad.points.map((point, index) => { const [x, y] = xy([point.lon, point.lat]); return <circle key={index} cx={x} cy={y} r={6 / zoom} fill={mapColor("#c7ed83", extras.dark)} stroke={mapColor("#141a19", extras.dark)} strokeWidth={2 / zoom} />; })}</>}
+      {extras.drawingRoad && <><polyline points={extras.drawingRoad.points.map(point => project([point.lon, point.lat])).join(" ")} fill="none" stroke={mapColor("#c7ed83", extras.dark)} strokeWidth={4} strokeDasharray="7 4" vectorEffect="non-scaling-stroke" />{extras.drawingRoad.points.map((point, index) => { const [x, y] = xy([point.lon, point.lat]); return <circle key={index} cx={x} cy={y} r={6 / zoom} fill={mapColor(index === extras.drawingErrorIndex ? "#ff6c75" : "#c7ed83", extras.dark)} stroke={mapColor("#141a19", extras.dark)} strokeWidth={2 / zoom} />; })}</>}
       {route && <polyline points={route.geometry.coordinates.map(project).join(" ")} fill="none" stroke={mapColor("#c4d7ff", extras.dark)} strokeWidth="4" strokeDasharray="8 4" vectorEffect="non-scaling-stroke" style={{ pointerEvents: "none" }} />}
       {extras.personal?.car_route && <polyline points={extras.personal.car_route.geometry.coordinates.map(project).join(" ")} fill="none" stroke={mapColor("#b4caff", extras.dark)} strokeWidth="4" vectorEffect="non-scaling-stroke" />}
       {extras.personal?.walk_route && <polyline points={extras.personal.walk_route.geometry.coordinates.map(project).join(" ")} fill="none" stroke={mapColor("#79d9c7", extras.dark)} strokeWidth="3" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />}
@@ -556,5 +572,5 @@ function SvgFallback({ data, state, selected, onSelect, disabled, activeTrip, fo
       {extras.experiment.showHouses && (!extras.hasResult || extras.hasHouseChanges) && extras.experiment.addedHouses.map(h => { const [x, y] = xy([h.coordinates.lon, h.coordinates.lat]); return <g key={h.house_id} role="button" tabIndex={0} aria-label={`Настроить метку дома · ${h.residents} жителей`} onKeyDown={e => { if (e.key === "Enter" && !disabled) extras.onEditHouse(h.house_id); }} onClick={e => { if (!extras.placement && !disabled) { e.stopPropagation(); extras.onEditHouse(h.house_id); } }} style={{ cursor: "pointer" }}><circle cx={x} cy={y} r={13 / zoom} fill={mapColor("#273626", extras.dark)} stroke={mapColor("#88d8c4", extras.dark)} strokeWidth={2 / zoom} /><text x={x} y={y + 4 / zoom} textAnchor="middle" fill={mapColor("#88d8c4", extras.dark)} fontSize={11 / zoom}>Д</text><title>{`Новый дом · ${h.residents} жителей. Нажмите для настройки`}</title></g>; })}
       {extras.experiment.routeEnabled && extras.experiment.points.map((p, index) => { if (!p) return null; const [x, y] = xy([p.lon, p.lat]); return <g key={index}><circle cx={x} cy={y} r={12 / zoom} fill={mapColor("#b4caff", extras.dark)} stroke={mapColor("#172522", extras.dark)} strokeWidth={2 / zoom} /><text x={x} y={y + 4 / zoom} textAnchor="middle" fill={mapColor("#172522", extras.dark)} fontSize={12 / zoom}>{index === 0 ? "А" : index === extras.experiment.points.length - 1 ? "Б" : index}</text></g>; })}
     </g>
-  </svg><span className="svg-attribution">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a></span><div className="map-controls"><div className="control-stack"><button aria-label="Приблизить карту" onClick={() => setZoom(z => Math.min(6, z * 1.3))}><Plus size={18} /></button><button aria-label="Отдалить карту" onClick={() => setZoom(z => Math.max(1, z / 1.3))}><Minus size={18} /></button></div><button className="map-control" aria-label="Начальный вид карты" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}><LocateFixed size={18} /></button></div></>;
+  </svg><span className="svg-attribution">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a></span><div className="map-controls svg-fallback-controls"><div className="control-stack"><button aria-label="Приблизить карту" onClick={() => setZoom(z => Math.min(6, z * 1.3))}><Plus size={18} /></button><button aria-label="Отдалить карту" onClick={() => setZoom(z => Math.max(1, z / 1.3))}><Minus size={18} /></button></div><button className="map-control" aria-label="Начальный вид карты" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}><LocateFixed size={18} /></button></div></>;
 }

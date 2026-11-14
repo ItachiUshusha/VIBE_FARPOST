@@ -1,0 +1,213 @@
+/* Shared dialog structure: fixed heading/actions, exactly one scrolling body. */
+.app-dialog {
+  position: fixed;
+  inset: 0;
+  width: min(560px, calc(100% - 40px));
+  max-width: none;
+  max-height: calc(var(--visual-height, 100dvh) - 32px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.app-dialog:not([open]) { display: none !important; }
+.app-dialog[open] { display: flex; flex-direction: column; }
+.app-dialog::backdrop { background: #101b2d70; }
+.app-dialog.editor-dialog { width: min(460px, calc(100% - 40px)); height: min(640px, calc(var(--visual-height, 100dvh) - 32px)); }
+.app-dialog.house-sheet { height: min(550px, calc(var(--visual-height, 100dvh) - 32px)); }
+.app-dialog .house-map-editor, .app-dialog .road-map-editor {
+  display: flex; flex-direction: column; height: 100%; min-height: 0; max-height: none; padding: 0; overflow: hidden;
+}
+.editor-heading {
+  display: flex; align-items: center; gap: 12px; flex: 0 0 auto;
+  min-height: 68px; margin: 0 !important; padding: 10px 16px;
+  border-bottom: 1px solid var(--border); background: var(--surface); touch-action: pan-x;
+}
+.editor-heading > div, .editor-heading > strong { flex: 1; min-width: 0; }
+.editor-heading strong { display: block; font-size: 18px; line-height: 1.35; }
+.editor-heading small { display: block; margin-top: 3px; font-size: 11px; color: var(--muted); }
+.editor-heading > svg { color: var(--accent); flex-shrink: 0; }
+.editor-heading .icon-button { width: 44px; height: 44px; min-width: 44px; flex: 0 0 44px; position: static; }
+.editor-scroll, .dialog-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 18px; scroll-padding-block: 16px; }
+.editor-scroll > input, .editor-scroll > select {
+  display: block; width: 100%; min-height: 48px; margin-top: 8px; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: 11px; background: var(--surface-2); color: var(--text); font: inherit; font-size: 16px;
+}
+.editor-scroll .select-label { margin-top: 18px; }
+.app-dialog .house-editor-actions {
+  display: grid; grid-template-columns: 1fr 1fr; flex: 0 0 auto; gap: 12px; position: static;
+  padding: 12px 18px max(12px, env(safe-area-inset-bottom, 0px)); margin: 0;
+  background: var(--surface); border-top: 1px solid var(--border);
+}
+.app-dialog .house-editor-actions > button { min-height: 48px; min-width: 0; font-size: 15px; justify-content: center; border-radius: 12px; }
+.editor-cancel { border: 1px solid var(--border); color: var(--text); background: var(--surface-2); }
+.editor-delete { display: flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 14px; }
+.app-dialog .house-position-button { width: 100%; min-height: 48px; padding: 12px 0; }
+.app-dialog .house-position-button small { display: block; line-height: 1.5; }
+.help-dialog .dialog-close { position: static; }
+.help-dialog .help-content { padding: 24px; }
+.help-dialog .help-content > .primary-button { width: 100%; }
+.action-list { display: grid; gap: 8px; }
+.action-list > button {
+  display: flex; align-items: center; gap: 14px; width: 100%; min-height: 76px; padding: 13px;
+  text-align: left; background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px;
+}
+.action-list > button > span { flex: 1; font-size: 16px; font-weight: 650; }
+.action-list small { display: block; font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 4px; }
+.action-list svg { flex-shrink: 0; color: var(--accent); }
+.map-settings-content > label { display: flex; align-items: center; gap: 12px; min-height: 48px; font-size: 15px; }
+.map-settings-content input { width: 22px; height: 22px; accent-color: var(--accent); }
+.map-settings-content > small { display: block; line-height: 1.6; color: var(--muted); }
+.settings-legend { display: grid; gap: 12px; margin-top: 20px; font-size: 13px; }
+.settings-legend > span { display: flex; align-items: center; gap: 10px; }
+.settings-map-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.settings-map-buttons button { min-height: 48px; margin: 0; justify-content: center; }
+.settings-map-buttons button:last-child { grid-column: 1 / -1; }
+.mobile-actions-trigger, .mobile-panel-title { display: none; }
+.resume-road { position: absolute; left: calc(var(--panel-space) + 24px); bottom: 115px; z-index: 8; padding: 12px 16px; border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.road-tool-error { font-size: 13px; line-height: 1.5; color: var(--red); margin: 8px 0 12px; }
+.road-cancel { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; margin-top: 8px; }
+.point-coordinate { overflow-wrap: anywhere; min-width: 0; text-align: left; }
+.point-coordinate > span { display: block; font-weight: 600; line-height: 1.5; }
+.point-coordinate > small { overflow-wrap: anywhere; white-space: normal; }
+.selected-parking-card { margin-top: 12px; padding: 14px; border: 1px solid var(--border); border-radius: 12px; }
+.parking-catalog-toggle { width: 100%; min-height: 48px; margin-block: 10px; }
+.occupancy-controls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.occupancy-controls > label { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.occupancy-controls button { width: 100%; min-width: 0; min-height: 44px; }
+.occupancy-controls button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.scenario-current { padding: 12px; margin: 0 0 16px; border-radius: 12px; background: var(--surface-2); color: var(--muted); font-size: 12px; line-height: 1.6; }
+.scenario-current strong { color: var(--text); }
+.group-heading { font-size: 14px; font-weight: 650; margin: 22px 0 12px; }
+
+/* Keep this query identical to useAppEnvironment, including short landscape. */
+@media (max-width: 900px), (max-height: 560px) and (max-width: 1100px) {
+  .map-shell-site .control-sheet.sheet-modal {
+    top: auto !important;
+    bottom: calc(var(--nav-height) + var(--service-footer-height) + var(--keyboard-gap, 0px)) !important;
+    height: calc(var(--visual-height, 100dvh) - var(--header-height) - env(safe-area-inset-top, 0px) - var(--nav-height) - var(--service-footer-height) - 8px) !important;
+    max-height: none; margin: 0; border-inline: 0; border-radius: 20px 20px 0 0;
+  }
+  .control-sheet .sheet-modal-inner, .control-sheet .sheet-surface { height: 100%; min-height: 0; display: flex; flex-direction: column; }
+  .control-sheet .sheet-drag-zone { flex: 0 0 16px; height: 16px; display: grid; place-items: center; touch-action: none; }
+  .sheet-drag-zone > span { width: 34px; height: 4px; border-radius: 4px; background: var(--surface-3); }
+  .panel-navigation { flex: 0 0 auto; min-height: 48px; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 6px max(16px, env(safe-area-inset-left, 0px)); touch-action: pan-x; }
+  .panel-navigation .panel-tabs { display: none; }
+  .mobile-panel-title { display: block; flex: 1; font-size: 19px; }
+  .panel-navigation .panel-close { width: 44px; min-width: 44px; height: 44px; }
+  .panel-scroll { min-height: 0; flex: 1; padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); overscroll-behavior: contain; }
+  .panel-footer { flex: 0 0 auto; padding: 10px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); }
+  .panel-footer > p { font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
+  .panel-intro { margin-top: 12px; }
+  .panel-intro h1 { font-size: 26px; }
+  .panel-intro .text-button { min-height: 44px; }
+  .panel-intro .eyebrow, .panel-intro p { display: none; }
+  .app-dialog, .app-dialog.editor-dialog, .app-dialog.house-sheet, .app-dialog.help-dialog, .service-confirm {
+    top: auto; bottom: var(--keyboard-gap, 0px);
+    max-height: calc(var(--visual-height, 100dvh) - env(safe-area-inset-top, 0px) - 8px);
+    border-inline: 0; border-bottom: 0; border-radius: 20px 20px 0 0;
+  }
+  .app-dialog.editor-dialog, .app-dialog.help-dialog { height: min(660px, calc(var(--visual-height, 100dvh) - env(safe-area-inset-top, 0px) - 8px)); }
+  .editor-heading { padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); min-height: 64px; }
+  .editor-scroll, .dialog-scroll, .help-dialog .help-content { padding: 16px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); }
+  .editor-scroll { scroll-padding-bottom: 20px; }
+  .house-editor-heading small { display: block; font-size: 11px; }
+  .mobile-tabbar.toolbar { padding-inline: max(8px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-right, 0px)); }
+  .mobile-tabbar .toolbar-inner { gap: 4px; padding: 4px 8px !important; }
+  .mobile-tabbar button { max-width: none; min-height: 48px; gap: 3px; font-size: 12px; font-weight: 600; }
+  .mobile-tabbar button.active { background: var(--accent-soft); font-weight: 750; box-shadow: inset 0 0 0 1px var(--border); }
+  .mobile-tabbar button > svg { width: 23px; height: 23px; }
+  body:has(.app-dialog[open]) .mobile-tabbar, body:has(.app-dialog[open]) .site-footer { visibility: hidden; }
+  .desktop-map-actions { display: none; }
+  .mobile-actions-trigger:not([hidden]) {
+    position: absolute; left: 12px; top: 70px; z-index: 8; display: flex; align-items: center; gap: 8px;
+    min-height: 48px; padding: 10px 16px; border: 1px solid var(--border); border-radius: 14px;
+    background: var(--surface); box-shadow: var(--shadow); font-size: 15px; font-weight: 650;
+  }
+  .map-legend, .map-bottom { display: none; }
+  .map-controls { top: 70px; right: 12px; flex-direction: column; }
+  .map-controls > .control-stack, .map-controls > .map-control:not(.settings-map-control) { display: none; }
+  .map-control, .control-stack button { min-width: 44px; min-height: 44px; }
+  .svg-fallback-controls .control-stack, .svg-fallback-controls > .map-control { display: flex; }
+  .svg-fallback-controls { top: 126px; }
+  .overview-strip { left: 12px; right: 12px; width: auto; max-width: none; min-height: 68px; grid-template-columns: repeat(3, minmax(0, 1fr)) 44px; padding: 10px; }
+  .overview-metric small { font-size: 10px; white-space: normal; }
+  .overview-open { width: 44px; height: 44px; }
+  .placement-hint, .app-shell[data-tool] .placement-hint { top: 70px; left: 12px; right: 12px; padding: 10px 8px 10px 12px; min-height: 56px; }
+  .placement-hint button { min-width: 44px; min-height: 44px; }
+  .app-shell[data-tool] .map-controls { top: 140px; }
+  .road-draw-controls { left: 0; right: 0; bottom: 0; max-width: none; padding: 12px 16px 4px; border-inline: 0; border-radius: 18px 18px 0 0; }
+  .road-draw-controls button { min-height: 48px; }
+  .road-cancel { min-height: 44px !important; }
+  .resume-road { left: 12px; right: 12px; bottom: 100px; max-width: none; min-height: 48px; justify-content: center; }
+  .point-row { grid-template-columns: 28px minmax(0, 1fr) 44px; gap: 6px; }
+  .point-row > .point-actions { grid-column: 2; display: flex; }
+  .point-row > .point-actions + button { grid-column: 3; grid-row: 1 / 3; }
+  .point-coordinate { font-size: 14px; min-height: 48px; }
+  .point-coordinate small { font-size: 11px; line-height: 1.5; }
+  .point-actions button, .point-row > .icon-button { width: 44px; height: 44px; min-width: 44px; }
+  .check-label { min-height: 44px; }
+  .traffic-picker input[type="range"], .factor-field input[type="range"] { min-height: 44px; }
+  .result-detail > summary, .parking-alternatives > summary, .result-empty button { min-height: 44px; }
+  .check-label input { width: 22px; height: 22px; }
+  .quiet-action, .house-demolish-button, .parking-source-link, .growth-row, .trip-row, .show-personal-route { min-height: 44px; }
+  .house-card > .icon-button { width: 44px; height: 44px; min-width: 44px; }
+  .house-card strong, .trip-row > span, .growth-road, .new-roads-result strong, .personal-time-comparison b { overflow-wrap: anywhere; }
+  .house-card-edit { min-height: 48px; }
+  .occupancy-controls { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .occupancy-controls button { min-width: 44px; padding-inline: 2px; }
+  .parking-source-link { display: inline-flex; align-items: center; }
+  .account-nav { width: 44px; min-width: 44px; min-height: 44px; }
+  .app-header { padding-inline: max(8px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-right, 0px)); gap: 4px; }
+  .brand { flex: 1; min-width: 0; gap: 6px; }
+  .brand > span:last-child { min-width: 0; }
+  .brand strong { white-space: normal; line-height: 1.15; }
+  .brand small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .route-pin, .house-pin { width: 44px; height: 44px; }
+  .header-actions .icon-button { width: 44px; min-width: 44px; height: 44px; }
+  .app-shell button, .app-dialog button { min-width: 44px; min-height: 44px; }
+  .app-shell[data-tool] .map-top { display: none; }
+  .app-shell[data-tool] .placement-hint { top: 12px; }
+  .app-shell[data-tool] .map-controls { top: 86px; }
+  .site-footer { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; overscroll-behavior-x: contain; padding-block: 2px; }
+  .site-footer a, .site-footer button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; flex-shrink: 0; white-space: nowrap; font-size: 10px; }
+  .cookie-banner { border-inline: 0; border-radius: 18px 18px 0 0; padding: 16px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); }
+  :root[data-keyboard-open="true"] .mobile-tabbar, :root[data-keyboard-open="true"] .site-footer { visibility: hidden; }
+  :root[data-keyboard-open="true"] .map-shell-site .control-sheet.sheet-modal { bottom: var(--keyboard-gap) !important; height: calc(var(--visual-height) - 8px) !important; }
+}
+@media (max-height: 560px) and (max-width: 1100px) {
+  .app-dialog .editor-heading { min-height: 52px; padding-block: 4px; }
+  .app-dialog .editor-heading small { display: none; }
+  .app-dialog .house-editor-actions { padding-block: 8px; }
+  .mobile-tabbar button { flex-direction: row; }
+  .app-shell[data-tool] .app-header { visibility: hidden; }
+  .app-shell[data-tool] .map-workspace { top: 0; }
+  .road-draw-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; }
+  .road-draw-controls > span { flex: 1; margin: 0; min-width: 120px; font-size: 12px; }
+  .road-draw-controls > div { flex: 0 0 auto; }
+  .road-draw-controls > div > button { min-height: 44px; padding-inline: 12px; }
+  .road-draw-controls .road-cancel { width: auto; min-height: 44px; margin: 0; padding-inline: 8px; font-size: 11px; }
+  .road-tool-error { order: 2; flex-basis: 100%; max-height: 74px; overflow-y: auto; margin: 0; }
+}
+
+/* Every mobile window spans the viewport, regardless of its parent's width
+   or Framework7 / browser dialog defaults. Safe-area padding stays inside. */
+@media (max-width: 900px), (max-height: 560px) and (max-width: 1100px) {
+  :root :is(.app-dialog, .sheet-modal, .help-dialog, .service-confirm, .cookie-banner) {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    min-width: 100vw !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+    border-left-width: 0;
+    border-right-width: 0;
+  }
+}

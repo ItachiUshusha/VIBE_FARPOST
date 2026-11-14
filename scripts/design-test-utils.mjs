@@ -22,18 +22,22 @@ export async function ready(page) {
 export async function openScenario(page) {
   if (await page.locator(".mobile-tabbar").isVisible()) {
     await page.locator(".mobile-tabbar").getByRole("button", { name: "Сценарий", exact: true }).click();
-    await page.getByRole("button", { name: "Раскрыть панель полностью", exact: true }).click();
   } else await page.getByRole("tab", { name: "Сценарий", exact: true }).click();
   await page.locator(".scenario-content").waitFor({ state: "visible" });
 }
 export async function openResult(page) {
   if (await page.locator(".mobile-tabbar").isVisible()) {
     await page.locator(".mobile-tabbar").getByRole("button", { name: "Результат", exact: true }).click();
-    await page.getByRole("button", { name: "Раскрыть панель полностью", exact: true }).click();
   } else await page.getByRole("tab", { name: "Результат", exact: true }).click();
 }
 export async function showMap(page) {
   if (await page.locator(".mobile-tabbar").isVisible()) await page.locator(".mobile-tabbar").getByRole("button", { name: "Карта", exact: true }).click();
+}
+export async function chooseMapAction(page, name) {
+  await showMap(page);
+  const trigger = page.locator(".mobile-actions-trigger");
+  if (await trigger.isVisible()) await trigger.click();
+  await page.getByRole("button", { name, exact: true }).click();
 }
 export async function reset(page) { await openScenario(page); await page.getByRole("button", { name: "Сбросить", exact: true }).click(); await ready(page); await page.waitForFunction(() => document.querySelectorAll(".overview-metric strong")[2]?.textContent.replace(/\s/g, "") === "1000"); await page.waitForTimeout(380); }
 export async function openDetails(page, selector) { if (!await page.locator(selector).evaluate(el => el.open)) await page.locator(selector + ">summary").click(); }
@@ -61,7 +65,11 @@ export async function screenshot(page, name) {
   await page.waitForTimeout(350);
   await page.screenshot({ path: `artifacts/design/${name}.png` });
 }
-export async function resetCamera(page) { await page.getByRole("button", { name: "Начальный вид карты", exact: true }).click(); await page.waitForTimeout(420); }
+export async function resetCamera(page) {
+  if (await page.locator(".mobile-tabbar").isVisible()) await page.getByRole("button", { name: "Настроить слои карты", exact: true }).click();
+  await page.getByRole("button", { name: "Начальный вид карты", exact: true }).click();
+  await page.waitForTimeout(420);
+}
 export async function clickMap(page, mapData, coordinates) {
   const box = await page.locator(".map-canvas").boundingBox();
   const world = ([lon, lat]) => { const size = 512 * 2 ** 14.8; const sin = Math.sin(lat * Math.PI / 180); return [(lon + 180) / 360 * size, (.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI)) * size]; };

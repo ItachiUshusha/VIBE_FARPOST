@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { writeFile } from "node:fs/promises";
-import { base, launch, createPage, ready, openScenario, openResult, showMap, reset, openDetails, calculate, demo, screenshot, resetCamera, clickMap, nearStreet, swipe } from "./design-test-utils.mjs";
+import { base, launch, createPage, ready, openScenario, openResult, showMap, reset, openDetails, calculate, demo, screenshot, resetCamera, clickMap, nearStreet, swipe, chooseMapAction } from "./design-test-utils.mjs";
 
 const catalog = await (await fetch(base + "/api/catalogs")).json();
 const mapData = await (await fetch(base + "/api/map")).json();
@@ -82,20 +82,20 @@ export async function runExtended() {
     await page.route("**/api/baseline*", async route => { if (route.request().url().includes("vehicle_count=1800")) await new Promise(resolve => setTimeout(resolve, 4000)); await route.continue(); });
     const refreshed = page.waitForResponse(response => response.url().includes("/api/baseline?vehicle_count=1800") && response.status() === 200);
     await page.getByLabel("Автомобилей в районе", { exact: true }).fill("1800"); await page.waitForTimeout(300);
-    await page.getByRole("button", { name: "Мой маршрут", exact: true }).click();
+    await chooseMapAction(page, "Мой маршрут");
     await clickMap(page, mapData, nearStreet(mapData, 131.8994, 43.1304)); await clickMap(page, mapData, mapData.center);
     await page.waitForFunction(() => document.querySelectorAll(".route-pin").length === 2);
     assert.equal(await page.locator(".calculate-button").isDisabled(), true);
     await refreshed; await page.unroute("**/api/baseline*");
     check("Постановка точек доступна при обновлении потока; расчёт ждёт актуальной базы");
-    await reset(page); await page.getByRole("button", { name: "Мой маршрут", exact: true }).click();
+    await reset(page); await chooseMapAction(page, "Мой маршрут");
     await clickMap(page, mapData, nearStreet(mapData, 131.8994, 43.1304)); await clickMap(page, mapData, mapData.center);
     await page.waitForFunction(() => document.querySelectorAll(".route-pin").length === 2);
     await openScenario(page); await page.getByRole("button", { name: "Добавить точку «Через»", exact: true }).click(); await clickMap(page, mapData, [131.8982076, 43.1346499]);
     await openScenario(page); await page.getByLabel("Парковка у точки Б", { exact: true }).selectOption("manual");
     const parking = catalog.parkings[0]; await page.getByLabel("Выбранная парковка", { exact: true }).selectOption(parking.parking_id);
     await openDetails(page, ".parking-editor"); await page.getByLabel("Найти парковку", { exact: true }).fill(parking.source_id); await page.getByLabel(`Занятость ${parking.name}`).fill("75");
-    await page.getByRole("button", { name: /^Дождь/ }).click(); await openDetails(page, ".housing-editor"); await page.getByRole("button", { name: `Убрать дом ${catalog.houses[0].name}`, exact: true }).click();
+    await page.getByRole("button", { name: /^Дождь/ }).click(); await openDetails(page, ".housing-editor"); await page.getByRole("button", { name: `Снести дом ${catalog.houses[0].name}`, exact: true }).click();
     result = await calculate(page); assert.equal(result.personal_route.snapped_points.via.length, 1); assert.equal(result.personal_route.after.search_time_s, 180); assert.equal(result.after.metrics.vehicle_count, 980); assert.equal(result.applied_settings.weather_factor_after, .85);
     await screenshot(page, "desktop-composite"); check("Точки А / Через / Б, дождь, парковка 75% и удаление дома работают вместе");
     await page.getByRole("button", { name: "До изменения", exact: true }).click(); await page.getByRole("button", { name: "После изменения", exact: true }).click(); assert.equal(result.personal_route.after.parking_included, true); check("Личная поездка включает автомобильный, парковочный и пеший этапы");
@@ -108,7 +108,7 @@ export async function runExtended() {
     const chosen = result.personal_route.after.parking; await openScenario(page); await page.getByLabel("Найти парковку", { exact: true }).fill(chosen.source_id); await page.getByLabel(`Занятость ${chosen.name}`).fill("100"); result = await calculate(page);
     assert.notEqual(result.personal_route.after.parking.parking_id, chosen.parking_id);
     const eligible = result.personal_route.after.alternatives.filter(a => a.status === "ok").sort((a,b) => a.total_time_s - b.total_time_s || a.parking.parking_id.localeCompare(b.parking.parking_id)); assert.equal(result.personal_route.after.parking.parking_id, eligible[0].parking.parking_id); check("Автовыбор сменяет заполненную парковку и минимизирует общее время");
-    await resetCamera(page); await page.getByRole("button", { name: "Добавить дом", exact: true }).click(); await clickMap(page, mapData, mapData.center);
+    await resetCamera(page); await chooseMapAction(page, "Добавить дом"); await clickMap(page, mapData, mapData.center);
     await page.locator(".house-map-editor").waitFor(); assert.equal(await page.getByLabel("Количество жильцов", { exact: true }).inputValue(), "40");
     await page.getByLabel("Количество жильцов", { exact: true }).fill("125"); await page.getByLabel("Куда поедут жители", { exact: true }).selectOption(catalog.terminals[1].terminal_id); await screenshot(page, "desktop-house"); await page.getByRole("button", { name: "Готово", exact: true }).click();
     const marker = page.locator(".house-pin"); const markerBox = await marker.boundingBox(); await page.mouse.move(markerBox.x + 16, markerBox.y + 16); await page.mouse.down(); await page.mouse.move(markerBox.x + 35, markerBox.y + 29, { steps: 8 }); await page.mouse.up(); await marker.click();
@@ -122,12 +122,12 @@ export async function runExtended() {
     await page.locator(".mobile-tabbar").getByRole("button", { name: "Сценарий", exact: true }).click(); await page.waitForTimeout(350);
     const panel = await page.locator(".control-sheet").boundingBox(); const nav = await page.locator(".mobile-tabbar").boundingBox();
     const primary = await page.locator(".calculate-button").boundingBox(); assert(primary.y + primary.height <= nav.y + 1);
-    const handle = await page.locator(".control-sheet .sheet-drag-zone").boundingBox(); await swipe(page, { x: handle.x + handle.width / 2, y: handle.y + 12 }, { x: handle.x + handle.width / 2, y: Math.min(760, handle.y + 290) });
+    const handle = await page.locator(".control-sheet .sheet-drag-zone").boundingBox(); await swipe(page, { x: handle.x + handle.width / 2, y: handle.y + handle.height / 2 }, { x: handle.x + handle.width / 2, y: Math.min(760, handle.y + 290) });
     await openScenario(page); assert.equal(await mobileCanvas.evaluate(el => el.isConnected), true); check("Нативный свайп Framework7 и нижняя навигация работают; основное действие остаётся доступным");
     await openDetails(page, ".route-editor"); await page.getByRole("button", { name: "Пример маршрута с парковкой", exact: true }).click(); await page.getByRole("button", { name: /^Снег/ }).click(); result = await calculate(page); assert.equal(result.personal_route.after.status, "ok"); await screenshot(page, "mobile-personal-result");
-    await page.getByRole("button", { name: "Показать поездку на карте", exact: true }).click(); await resetCamera(page); await page.getByRole("button", { name: "Добавить дом", exact: true }).click(); await clickMap(page, mapData, mapData.center);
+    await page.getByRole("button", { name: "Показать поездку на карте", exact: true }).click(); await resetCamera(page); await chooseMapAction(page, "Добавить дом"); await clickMap(page, mapData, mapData.center);
     await page.getByLabel("Количество жильцов", { exact: true }).fill("30"); await screenshot(page, "mobile-house");
-    const done = await page.getByRole("button", { name: "Готово", exact: true }).boundingBox(); const house = await page.locator(".house-sheet").boundingBox(); assert(done.y >= house.y && done.y + done.height <= nav.y + 1);
+    const done = await page.getByRole("button", { name: "Готово", exact: true }).boundingBox(); const house = await page.locator(".house-sheet").boundingBox(); assert(done.y >= house.y && done.y + done.height <= house.y + house.height + 1);
     await page.setViewportSize({ width:390,height:500 }); await page.getByLabel("Количество жильцов", { exact: true }).focus(); await screenshot(page, "mobile-house-short-viewport");
     await page.getByRole("button", { name: "Готово", exact: true }).click(); await page.setViewportSize({ width:390,height:844 }); await openScenario(page); result = await calculate(page); assert.equal(result.house_changes.added[0].vehicle_count, 30); check("Мобильный маршрут и дом работают без внешних запросов; карточка доступна при уменьшении высоты окна");
     await page.setViewportSize({ width:844,height:390 }); await showMap(page); assert.equal(await mobileCanvas.evaluate(el => el.isConnected), true); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false); await screenshot(page, "mobile-landscape");

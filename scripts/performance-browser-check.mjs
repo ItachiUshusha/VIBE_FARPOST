@@ -37,7 +37,7 @@ try {
   check("В покое анимация не обновляется; экономный режим использует DPR 1");
 
   assert.equal(await page.locator(".parking-setting").count(), 0);
-  await openScenario(page); await openDetails(page, ".parking-editor");
+  await openScenario(page); await openDetails(page, ".parking-editor"); await page.getByRole("button", { name: "Открыть полный каталог", exact: true }).click();
   await page.locator(".parking-setting").first().waitFor();
   const first = catalogs.parkings[0], last = catalogs.parkings.at(-1);
   const firstRow = page.locator(`[data-parking-id="${first.parking_id}"]`);
@@ -65,7 +65,7 @@ try {
   await search.fill(""); await firstRow.waitFor();
   await page.locator(".parking-editor > summary").click();
   await page.waitForFunction(() => document.querySelectorAll(".parking-setting").length === 0);
-  await openDetails(page, ".parking-editor");
+  await openDetails(page, ".parking-editor"); await page.getByRole("button", { name: "Открыть полный каталог", exact: true }).click();
   await firstRow.waitFor(); assert.equal(await firstRow.locator("input").inputValue(), "73");
   check("Поиск, пустая выдача и повторное открытие сохраняют значения; закрытый список размонтирован");
 
@@ -121,10 +121,12 @@ try {
 
   await page.close();
   const mobile = await createPage(browser, errors, 390, 844, { reducedMotion: "reduce" });
-  await mobile.goto(base); await ready(mobile); await openScenario(mobile); await openDetails(mobile, ".parking-editor");
+  await mobile.goto(base); await ready(mobile); await openScenario(mobile); await openDetails(mobile, ".parking-editor"); await mobile.getByRole("button", { name: "Открыть полный каталог", exact: true }).click();
   await mobile.locator(".parking-setting").first().waitFor();
   assert(await mobile.locator(".parking-setting").count() <= 16);
   assert.equal(await mobile.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+  await mobile.locator(".mobile-tabbar").getByRole("button", { name: "Карта", exact: true }).click();
+  await mobile.getByRole("button", { name: "Настроить слои карты", exact: true }).click();
   assert(await mobile.getByRole("button", { name: "Продолжить анимацию", exact: true }).isDisabled());
   check("На телефоне виртуальный список не создаёт переполнения; reduced motion соблюдается");
   assert.deepEqual(errors, []);

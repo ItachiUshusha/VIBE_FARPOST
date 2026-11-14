@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import AuthStatus from "./AuthStatus";
 import { trackGoal } from "@/lib/analytics";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Activity, ArrowDown, ArrowDownRight, ArrowLeftRight, ArrowRight, ArrowUpRight, Ban, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Download, Expand, GitBranch, Info, Layers3, MapPin, MousePointer2, Play, RefreshCw, RotateCcw, Route, Search, SlidersHorizontal, Sparkles, TrafficCone, TrendingUp, Users, X, Zap } from "lucide-react";
 import { api, distance, number, shortTime, time, timeChange } from "@/lib/api";
 import { nearestJunction, plural, roadLanes, roadLength, trafficLabel } from "@/lib/roads";
@@ -14,12 +14,14 @@ import ExperimentPanel, { ExperimentHelp, initialExperiment, WEATHER_NAMES } fro
 import PersonalResult from "./PersonalResult";
 import HouseEditor from "./HouseEditor";
 import RoadEditor from "./RoadEditor";
+import AppDialog from "./AppDialog";
 import { House as HouseIcon, Map as MapIcon, Moon, Sun, ChevronUp, PanelBottom, BarChart3, Navigation, Trash2, Undo2, Plus } from "lucide-react";
 import * as m from "motion/react-m";
-import { AdaptiveSheet, AppPreloader, DesignProvider, expandSheet, MapSkeleton, MobileToolbar, notify, useAppEnvironment } from "./DesignSystem";
+import { AdaptiveSheet, AppPreloader, DesignProvider, MapSkeleton, MobileToolbar, notify, useAppEnvironment } from "./DesignSystem";
 
 const RoadMap = dynamic(() => import("./RoadMap"), { ssr: false, loading: () => <MapSkeleton message="Готовим карту Первой Речки" /> });
 const NO_ADDED_ROADS: ScenarioRoad[] = [];
+type PanelView = "map" | "scenario" | "result";
 const useClientLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 function Butterfly({ className = "" }: { className?: string }) {
@@ -43,7 +45,7 @@ export default function Simulator() {
 
 function SimulatorWorkspace() {
   const { mobile, dark, reducedMotion, toggleTheme } = useAppEnvironment();
-  const [panelView, setPanelView] = useState<"map" | "scenario" | "result">("map");
+  const [panelView, setPanelView] = useState<PanelView>("map");
   const panelScrollRef = useRef<HTMLDivElement>(null);
   const panelPositions = useRef({ scenario: 0, result: 0 });
   const lastResultId = useRef<string | null>(null);
@@ -53,9 +55,15 @@ function SimulatorWorkspace() {
   const [catalogs, setCatalogs] = useState<Catalogs | null>(null);
   const [experiment, setExperiment] = useState<Experiment>(initialExperiment);
   const [placement, setPlacement] = useState<Placement>(null);
-  const [editingHouseId, setEditingHouseId] = useState<string | null>(null);
-  const [editingRoadId, setEditingRoadId] = useState<string | null>(null);
+  const [editingHouse, setEditingHouse] = useState<HouseDraft | null>(null);
+  const [editingRoad, setEditingRoad] = useState<RoadDraft | null>(null);
+  const editorReturn = useRef<PanelView>("map");
+  const repositionDraft = useRef<HouseDraft | null>(null);
+  const roadReturn = useRef<PanelView>("map");
   const [drawingRoad, setDrawingRoad] = useState<RoadDraft | null>(null);
+  const [roadError, setRoadError] = useState<{ text: string; index: number | null } | null>(null);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [baselineBusy, setBaselineBusy] = useState(false);
   const [baselineRetry, setBaselineRetry] = useState(0);
   const [initialError, setInitialError] = useState("");
@@ -79,7 +87,6 @@ function SimulatorWorkspace() {
   const [analyzing, setAnalyzing] = useState(false);
   const [editScenario, setEditScenario] = useState(false);
   const [analysisError, setAnalysisError] = useState("");
-  const help = useRef<HTMLDialogElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -124,30 +131,62 @@ function SimulatorWorkspace() {
   }, [resetResult]);
 
   const beginPlacement = (action: Placement) => {
+    if (action?.kind === "house" && action.houseId && editingHouse) repositionDraft.current = editingHouse;
+    else if (action?.kind === "house") { editorReturn.current = panelView; repositionDraft.current = null; }
     setPlacement(action);
-    if (action) { setEditingHouseId(null); setEditingRoadId(null); }
-    if (action?.kind !== "road") setDrawingRoad(null);
+    if (action) { setEditingHouse(null); setEditingRoad(null); }
     if (action) setPanelView("map");
+    setActionsOpen(false);
   };
   const startRoad = (previous?: RoadDraft) => {
+    if (drawingRoad && !previous) { setPlacement({ kind: "road" }); setPanelView("map"); setActionsOpen(false); return; }
+    if (drawingRoad && previous && drawingRoad.road_id !== previous.road_id) { notify("Сначала завершите или отмените сохранённый черновик дороги."); return; }
     if (busyRef.current || !data || (!previous && experiment.addedRoads.length >= 5)) return;
+    if (!previous) roadReturn.current = panelView;
+    else roadReturn.current = editorReturn.current;
     setDrawingRoad(previous ? { ...previous, points: [] } : { road_id: "user-" + crypto.randomUUID(), name: `Новая дорога ${experiment.addedRoads.length + 1}`, points: [], lanes: 1, speed_kmh: 40, two_way: true });
-    setEditingHouseId(null); setEditingRoadId(null); setPlacement({ kind: "road" }); setPanelView("map"); resetResult();
+    setRoadError(null); setActionsOpen(false);
+    setEditingHouse(null); setEditingRoad(null); setPlacement({ kind: "road" }); setPanelView("map");
   };
   const finishRoad = () => {
     if (!drawingRoad || drawingRoad.points.length < 2 || !data || !catalogs || busyRef.current) return;
     const radius = catalogs.config.snap_radius_m;
     const start = nearestJunction(data, drawingRoad.points[0], radius), end = nearestJunction(data, drawingRoad.points.at(-1)!, radius);
-    if (!start || !end) { notify(`Начало и конец дороги должны быть не дальше ${radius} м от перекрёстка. Переставьте последнюю точку или начните заново.`); return; }
-    if (start.nodeId === end.nodeId) { notify("Соедините два разных перекрёстка"); return; }
+    if (!start || !end) { setRoadError({ text: `Выберите ${!start ? "начало" : "конец"} не дальше ${radius} м от перекрёстка. Нажмите «Назад» и поставьте точку ближе к улице.`, index: !start ? 0 : drawingRoad.points.length - 1 }); return; }
+    if (start.nodeId === end.nodeId) { setRoadError({ text: "Начало и конец совпали. Уберите последнюю точку и выберите другой перекрёсток.", index: drawingRoad.points.length - 1 }); return; }
     const road = { ...drawingRoad, points: [start.point, ...drawingRoad.points.slice(1, -1), end.point] };
-    if (roadLength(road.points) < 10 || roadLength(road.points) > 10000) { notify("Длина дороги должна быть от 10 м до 10 км"); return; }
-    const exists = experiment.addedRoads.some(item => item.road_id === road.road_id);
-    changeExperiment({ addedRoads: exists ? experiment.addedRoads.map(item => item.road_id === road.road_id ? road : item) : [...experiment.addedRoads, road] });
-    setDrawingRoad(null); setPlacement(null); setEditingRoadId(road.road_id); notify("Дорога добавлена. Настройте полосы и скорость");
+    if (roadLength(road.points) < 10 || roadLength(road.points) > 10000) { setRoadError({ text: "Длина дороги должна быть от 10 м до 10 км. Измените последнюю точку или уберите лишние повороты.", index: drawingRoad.points.length - 1 }); return; }
+    editorReturn.current = roadReturn.current;
+    setDrawingRoad(null); setRoadError(null); setPlacement(null); setEditingRoad(road);
   };
-  const editRoad = (id: string) => { setEditingRoadId(id); setEditingHouseId(null); setPlacement(null); setDrawingRoad(null); setPanelView("map"); };
-  const changeRoad = (id: string, patch: Partial<RoadDraft>) => changeExperiment({ addedRoads: experiment.addedRoads.map(road => road.road_id === id ? { ...road, ...patch } : road) });
+  const editRoad = (id: string) => {
+    const road = experiment.addedRoads.find(item => item.road_id === id);
+    if (!road) return;
+    editorReturn.current = panelView;
+    setEditingRoad({ ...road, points: [...road.points] }); setEditingHouse(null); setPlacement(null);
+  };
+  const closeRoad = (apply = false) => {
+    if (apply && editingRoad) {
+      if (!editingRoad.name.trim() || !Number.isInteger(editingRoad.lanes) || editingRoad.lanes < 1 || editingRoad.lanes > 6) return;
+      const exists = experiment.addedRoads.some(item => item.road_id === editingRoad.road_id);
+      changeExperiment({ addedRoads: exists ? experiment.addedRoads.map(item => item.road_id === editingRoad.road_id ? editingRoad : item) : [...experiment.addedRoads, editingRoad] });
+    }
+    setEditingRoad(null); setPanelView(editorReturn.current);
+  };
+  const closeHouse = (apply = false) => {
+    if (apply && editingHouse) {
+      if (!Number.isInteger(editingHouse.residents) || editingHouse.residents < 1 || editingHouse.residents > 20000) return;
+      const exists = experiment.addedHouses.some(item => item.house_id === editingHouse.house_id);
+      changeExperiment({ addedHouses: exists ? experiment.addedHouses.map(item => item.house_id === editingHouse.house_id ? editingHouse : item) : [...experiment.addedHouses, editingHouse], showHouses: true });
+    }
+    repositionDraft.current = null;
+    setEditingHouse(null); setPanelView(editorReturn.current);
+  };
+  const cancelPlacement = () => {
+    if (placement?.kind === "house" && placement.houseId && repositionDraft.current) setEditingHouse(repositionDraft.current);
+    if (placement?.kind === "road") { setDrawingRoad(null); setRoadError(null); setPanelView(roadReturn.current); }
+    setPlacement(null);
+  };
   const demolishHouse = (id: string) => {
     if (busyRef.current) return;
     const house = catalogs?.houses.find(item => item.house_id === id);
@@ -164,9 +203,11 @@ function SimulatorWorkspace() {
       let nextPoint = point;
       if (drawingRoad && !drawingRoad.points.length && data && catalogs) {
         const connection = nearestJunction(data, point, catalogs.config.snap_radius_m);
-        if (!connection) { notify(`Выберите начало ближе к перекрёстку — в пределах ${catalogs.config.snap_radius_m} м`); return; }
+        if (!connection) { setRoadError({ text: `Выберите начало ближе к перекрёстку — в пределах ${catalogs.config.snap_radius_m} м. Линия сохранена.`, index: null }); return; }
         nextPoint = connection.point;
       }
+      if (drawingRoad && drawingRoad.points.length >= 12) { setRoadError({ text: "Можно поставить до 12 точек. Завершите дорогу или уберите последнюю точку.", index: drawingRoad.points.length - 1 }); return; }
+      setRoadError(null);
       setDrawingRoad(previous => previous && previous.points.length < 12 ? { ...previous, points: [...previous.points, nextPoint] } : previous);
       return;
     } else if (placement.kind === "route") {
@@ -178,12 +219,9 @@ function SimulatorWorkspace() {
       if (!catalogs) return;
       const id = placement.houseId || "user-" + crypto.randomUUID();
       if (!placement.houseId && experiment.addedHouses.length >= 10) { setError("В один сценарий можно добавить до 10 домов."); setPlacement(null); return; }
-      const addedHouses = placement.houseId
-        ? experiment.addedHouses.map(h => h.house_id === id ? { ...h, coordinates: point } : h)
-        : [...experiment.addedHouses, { house_id: id, coordinates: point, residents: 40, terminal_id: catalogs.terminals[0].terminal_id }];
-      changeExperiment({ addedHouses, showHouses: true });
-      setEditingHouseId(id); setPlacement(null);
-      setPanelView("map"); notify(placement.houseId ? "Дом перемещён" : "Дом добавлен. Настройте количество жителей");
+      const previous = placement.houseId ? repositionDraft.current || experiment.addedHouses.find(h => h.house_id === id) : null;
+      setEditingHouse(previous ? { ...previous, coordinates: point } : { house_id: id, coordinates: point, residents: 40, terminal_id: catalogs.terminals[0].terminal_id });
+      setPlacement(null);
     }
   }, [placement, experiment.points, experiment.addedHouses, catalogs, data, drawingRoad, changeExperiment]);
   const changeHouse = useCallback((id: string, patch: Partial<HouseDraft>) => {
@@ -191,14 +229,17 @@ function SimulatorWorkspace() {
     changeExperiment({ addedHouses: experiment.addedHouses.map(h => h.house_id === id ? { ...h, ...patch } : h) });
   }, [experiment.addedHouses, changeExperiment]);
   const editHouse = (id: string) => {
-    setEditingHouseId(id); setEditingRoadId(null); setPlacement(null); setDrawingRoad(null); setPanelView("map");
+    const house = experiment.addedHouses.find(item => item.house_id === id);
+    if (!house) return;
+    editorReturn.current = panelView;
+    setEditingHouse({ ...house }); setEditingRoad(null); setPlacement(null);
   };
   const moveRoutePoint = useCallback((index: number, point: Coordinate) => {
     if (busyRef.current) return;
     const points = [...experiment.points]; points[index] = point; changeExperiment({ points }); setPlacement(null);
   }, [experiment.points, changeExperiment]);
   const resetAll = () => {
-    setSelected(null); setScenarioType("none"); setPlacement(null); setEditingHouseId(null); setEditingRoadId(null); setDrawingRoad(null); setFactor(.5); setDemand(1.4);
+    setSelected(null); setScenarioType("none"); setPlacement(null); setEditingHouse(null); setEditingRoad(null); setDrawingRoad(null); setRoadError(null); setFactor(.5); setDemand(1.4);
     setExperiment({ ...initialExperiment(), vehicleCount: catalogs?.config.default_vehicle_count || 1000 });
     setResetKey(k => k + 1); resetResult();
     setPanelView("map");
@@ -235,8 +276,7 @@ function SimulatorWorkspace() {
       trackGoal("simulation_success");
       setActiveTrip(result.personal_route ? null : result.comparison.changed_trip_ids[0] || null);
       setPlacement(null);
-      setEditingHouseId(null);
-      setEditingRoadId(null); setDrawingRoad(null);
+      setEditingHouse(null); setEditingRoad(null);
       setFocus(f => f + 1);
       notify("Сценарий рассчитан");
     } catch (e) {
@@ -270,7 +310,8 @@ function SimulatorWorkspace() {
   const selectedRatio = selectedLoads.length ? Math.max(...selectedLoads.map(l => l.ratio)) : 0;
   const selectedFlow = selectedLoads.reduce((sum, l) => sum + l.flow, 0);
   const isClosed = selectedLoads.some(l => l.status === "closed");
-  const submitDisabled = busy || pendingBaseline || !data || !countValid || ((scenarioType === "closure" || scenarioType === "capacity_reduction") && (!selected || !selected.can_close));
+  const routeIncomplete = experiment.routeEnabled && experiment.points.some(point => !point);
+  const submitDisabled = busy || pendingBaseline || !data || !countValid || routeIncomplete || ((scenarioType === "closure" || scenarioType === "capacity_reduction") && (!selected || !selected.can_close));
   const appliedRoad = run?.applied_settings?.road_change;
   const appliedTitle = run?.personal_route ? "Ваша поездка и район" : appliedRoad ? data?.segments.find(s => s.segment_id === appliedRoad.segment_id)?.name : "Сценарий района";
   const routeFeatures = run ? [...new Map([...run.before.routes.features, ...run.after.routes.features].map(f => [f.properties.trip_id, f])).values()] : [];
@@ -284,54 +325,65 @@ function SimulatorWorkspace() {
   };
 
   const activePanel = panelView === "map" ? "scenario" : panelView;
-  const editingHouse = experiment.addedHouses.find(h => h.house_id === editingHouseId);
-  const editingRoad = experiment.addedRoads.find(road => road.road_id === editingRoadId);
-  const showMap = () => { setPanelView("map"); setEditingHouseId(null); setEditingRoadId(null); };
+  const editingHouseId = editingHouse?.house_id || null;
+  const mapExperiment = useMemo(() => editingHouse ? { ...experiment, addedHouses: experiment.addedHouses.some(h => h.house_id === editingHouse.house_id)
+    ? experiment.addedHouses.map(h => h.house_id === editingHouse.house_id ? editingHouse : h) : [...experiment.addedHouses, editingHouse] } : experiment, [experiment, editingHouse]);
+  const showMap = () => setPanelView("map");
   const showPersonal = () => { setActiveTrip(null); setInspectSegment(null); setFocus(f => f + 1); showMap(); };
   const resultEmpty = activePanel === "result" && !run && !busy;
-  const panelOpen = panelView !== "map" && !placement && !editingHouse && !editingRoad;
+  const panelOpen = panelView !== "map" && !editingHouse && !editingRoad;
   useClientLayoutEffect(() => {
     if (activePanel === "result" && (run?.run_id || null) !== lastResultId.current) {
       panelPositions.current.result = 0;
       lastResultId.current = run?.run_id || null;
     }
-    if (panelScrollRef.current) panelScrollRef.current.scrollTop = panelPositions.current[activePanel];
-  }, [activePanel, run?.run_id]);
+    const scroll = panelScrollRef.current;
+    if (!scroll || mobile && !panelOpen) return;
+    const position = panelPositions.current[activePanel];
+    scroll.scrollTop = position;
+    // Framework7 changes sheet visibility after React commits the open state.
+    const frame = requestAnimationFrame(() => { scroll.scrollTop = position; });
+    return () => cancelAnimationFrame(frame);
+  }, [activePanel, run?.run_id, mobile, panelOpen]);
 
-  return <div className="app-shell" data-panel={panelView} data-mobile={mobile} data-tool={placement?.kind || undefined}>
+  return <div className="app-shell" data-panel={panelView} data-mobile={mobile} data-tool={panelView === "map" ? placement?.kind || undefined : undefined}>
     <header className="app-header">
       <Link className="brand" href="/" aria-label="Эффект бабочки — главная"><span className="brand-mark"><Butterfly /></span><span><strong>Эффект бабочки</strong><small><span className={`live-dot ${!baseline || pendingBaseline ? "waiting" : ""}`} />Первая Речка · Владивосток</small></span></Link>
       <div className="model-status" role="status"><span className={`live-dot ${!baseline || pendingBaseline ? "waiting" : ""}`} /><span>{pendingBaseline && countValid ? "Обновляем количество машин" : baseline ? "Можно рассчитать изменения" : initialError ? "Нет соединения с моделью" : "Подключаем модель"}<small className="status-sub">{baseline ? `${baseline.metrics.trip_count} направлений · ${number(baseline.metrics.vehicle_count)} машин в расчёте` : "Реальная карта · выбранное число машин"}</small></span></div>
-      <div className="header-actions"><AuthStatus /><span className="farpost">far<span>post</span><small>ВАЙБАТОН ’26</small></span><button className="icon-button theme-button" onClick={toggleTheme} aria-label={dark ? "Включить светлую тему" : "Включить тёмную тему"}>{dark ? <Sun size={19} /> : <Moon size={19} />}</button><button className="icon-button" onClick={() => help.current?.showModal()} aria-label="Как это работает"><CircleHelp size={20} /></button></div>
+      <div className="header-actions"><AuthStatus /><span className="farpost">far<span>post</span><small>ВАЙБАТОН ’26</small></span><button className="icon-button theme-button" onClick={toggleTheme} aria-label={dark ? "Включить светлую тему" : "Включить тёмную тему"}>{dark ? <Sun size={19} /> : <Moon size={19} />}</button><button className="icon-button" onClick={() => setHelpOpen(true)} aria-label="Как это работает"><CircleHelp size={20} /></button></div>
     </header>
 
     <main className="map-workspace" aria-label="Симулятор дорожных изменений">
-      {data && currentState ? <RoadMap data={data} state={currentState} selected={inspectSegment || (scenarioType === "demand_increase" || scenarioType === "none" ? null : selected)} onSelect={selectSegment} phase={phase} onPhase={setPhase} hasResult={!!run} activeTrip={activeTrip} focus={focus} resetKey={resetKey} disabled={busy} catalogs={catalogs} experiment={experiment} placement={placement} onMapPoint={mapPoint} onMovePoint={moveRoutePoint} onCancelPlacement={() => { setPlacement(null); setDrawingRoad(null); }} onParking={id => { changeExperiment({ parkingMode: "manual", parkingId: id, routeEnabled: true }); setPanelView("scenario"); }} onHouse={demolishHouse} drawingRoad={drawingRoad} addedRoads={run?.added_roads || NO_ADDED_ROADS} onEditRoad={editRoad} editingHouseId={editingHouseId} onEditHouse={editHouse} onChangeHouse={changeHouse} onCloseHouse={() => setEditingHouseId(null)} onRemoveHouse={id => { changeExperiment({ addedHouses: experiment.addedHouses.filter(h => h.house_id !== id) }); setEditingHouseId(null); }} onRepositionHouse={id => beginPlacement({ kind: "house", houseId: id })} personal={run?.personal_route?.[phase] || null} parkingOccupancy={run?.applied_settings?.[phase === "before" ? "parking_occupancy_before" : "parking_occupancy_after"] || experiment.occupancy} hasHouseChanges={phase === "after" && !!run} dark={dark} reducedMotion={reducedMotion} /> : <MapSkeleton failed={!!initialError} message={initialError ? "Не удалось подключить модель" : "Подключаем модель района"} />}
+      {data && currentState ? <RoadMap data={data} state={currentState} selected={inspectSegment || (scenarioType === "demand_increase" || scenarioType === "none" ? null : selected)} onSelect={selectSegment} phase={phase} onPhase={setPhase} hasResult={!!run} activeTrip={activeTrip} focus={focus} resetKey={resetKey} disabled={busy} catalogs={catalogs} experiment={mapExperiment} placement={panelView === "map" ? placement : null} onMapPoint={mapPoint} onMovePoint={moveRoutePoint} onCancelPlacement={cancelPlacement} onParking={id => { changeExperiment({ parkingMode: "manual", parkingId: id, routeEnabled: true }); setPanelView("scenario"); }} onHouse={demolishHouse} drawingRoad={drawingRoad} drawingErrorIndex={roadError?.index ?? null} onDisplayChange={changeExperiment} addedRoads={run?.added_roads || NO_ADDED_ROADS} onEditRoad={editRoad} editingHouseId={editingHouseId} onEditHouse={editHouse} onChangeHouse={changeHouse} onCloseHouse={() => closeHouse()} onRemoveHouse={id => { changeExperiment({ addedHouses: experiment.addedHouses.filter(h => h.house_id !== id) }); setEditingHouse(null); }} onRepositionHouse={id => beginPlacement({ kind: "house", houseId: id })} personal={run?.personal_route?.[phase] || null} parkingOccupancy={run?.applied_settings?.[phase === "before" ? "parking_occupancy_before" : "parking_occupancy_after"] || experiment.occupancy} hasHouseChanges={phase === "after" && !!run} mobile={mobile} dark={dark} reducedMotion={reducedMotion} /> : <MapSkeleton failed={!!initialError} message={initialError ? "Не удалось подключить модель" : "Подключаем модель района"} />}
 
-      <div className={`map-task-toolbar ${(!!placement || mobile && (panelOpen || editingHouse || editingRoad)) ? "is-covered" : ""}`} aria-label="Действия на карте"><button aria-label="Мой маршрут" disabled={busy || !data} onClick={() => { changeExperiment({ routeEnabled: true }); beginPlacement({ kind: "route", index: 0 }); }}><Navigation size={17} />Маршрут</button><button disabled={busy || !data || experiment.addedHouses.length >= 10} onClick={() => { changeExperiment({ showHouses: true }); beginPlacement({ kind: "house" }); }}><HouseIcon size={17} />Добавить дом</button><button disabled={busy || !data || experiment.addedRoads.length >= 5} onClick={() => startRoad()}><Plus size={17} />Своя дорога</button><button disabled={busy || !catalogs?.houses.length} onClick={() => { changeExperiment({ showHouses: true }); beginPlacement({ kind: "demolish" }); }}><Trash2 size={17} />Снести дом</button><button className="toolbar-demo" disabled={busy || !catalogs} onClick={() => { if (!catalogs) return; const demo = catalogs.demo_personal_route; changeExperiment({ routeEnabled: true, points: [demo.origin, ...demo.via, demo.destination], parkingMode: "auto" }); setPanelView("scenario"); }}><Route size={17} />Пример А → Б + P</button></div>
+      <button className="mobile-actions-trigger" hidden={panelView !== "map" || !!placement || !!editingHouse || !!editingRoad} disabled={busy || !data} onClick={() => setActionsOpen(true)} aria-haspopup="dialog"><Plus size={20} />Действия</button>
+      <div className={`map-task-toolbar desktop-map-actions ${(panelView === "map" && !!placement || mobile && (panelOpen || editingHouse || editingRoad)) ? "is-covered" : ""}`} aria-label="Действия на карте"><button aria-label="Мой маршрут" disabled={busy || !data} onClick={() => { changeExperiment({ routeEnabled: true }); beginPlacement({ kind: "route", index: 0 }); }}><Navigation size={17} />Маршрут</button><button aria-label="Добавить дом" disabled={busy || !data || experiment.addedHouses.length >= 10} onClick={() => { changeExperiment({ showHouses: true }); beginPlacement({ kind: "house" }); }}><HouseIcon size={17} />Добавить дом</button><button disabled={busy || !data || experiment.addedRoads.length >= 5} onClick={() => startRoad()}><Plus size={17} />Своя дорога</button><button aria-label="Снести дом" disabled={busy || !catalogs?.houses.length} onClick={() => { changeExperiment({ showHouses: true }); beginPlacement({ kind: "demolish" }); }}><Trash2 size={17} />Снести дом</button><button className="toolbar-demo" disabled={busy || !catalogs} onClick={() => { if (!catalogs) return; const demo = catalogs.demo_personal_route; changeExperiment({ routeEnabled: true, points: [demo.origin, ...demo.via, demo.destination], parkingMode: "auto" }); setPanelView("scenario"); }}><Route size={17} />Пример А → Б + P</button></div>
+      {drawingRoad && placement?.kind !== "road" && panelView === "map" && <button className="resume-road quiet-action" onClick={() => setPlacement({ kind: "road" })}><Route size={18} />Продолжить дорогу · {drawingRoad.points.length} точек</button>}
 
-      <div className={`overview-strip ${(!!placement || mobile && (panelOpen || editingHouse || editingRoad)) ? "is-covered" : ""}`} aria-label="Показатели выбранного состояния"><div className="overview-place"><MapPin size={16} /><span>Первая Речка<small className="summary-caption">{phase === "after" ? "После изменения" : "Исходное движение"}</small></span></div><div className="overview-metric"><Clock3 size={17} /><span><strong>{currentState ? shortTime(currentState.metrics.average_time_s) : "—"}</strong><small>среднее время</small></span></div><div className="overview-metric"><Route size={17} /><span><strong>{currentState ? distance(currentState.metrics.average_length_m) : "—"}</strong><small>средняя длина</small></span></div><div className="overview-metric"><Users size={17} /><span><strong>{currentState ? number(currentState.metrics.vehicle_count) : "—"}</strong><small>машин в расчёте</small></span></div><button className="overview-open icon-button" aria-label="Открыть настройки сценария" onClick={() => setPanelView("scenario")}><ChevronUp size={21} /></button></div>
+
+      <div className={`overview-strip ${(panelView === "map" && !!placement || mobile && (panelOpen || editingHouse || editingRoad)) ? "is-covered" : ""}`} aria-label="Показатели выбранного состояния"><div className="overview-place"><MapPin size={16} /><span>Первая Речка<small className="summary-caption">{phase === "after" ? "После изменения" : "Исходное движение"}</small></span></div><div className="overview-metric"><Clock3 size={17} /><span><strong>{currentState ? shortTime(currentState.metrics.average_time_s) : "—"}</strong><small>среднее время</small></span></div><div className="overview-metric"><Route size={17} /><span><strong>{currentState ? distance(currentState.metrics.average_length_m) : "—"}</strong><small>средняя длина</small></span></div><div className="overview-metric"><Users size={17} /><span><strong>{currentState ? number(currentState.metrics.vehicle_count) : "—"}</strong><small>машин в расчёте</small></span></div><button className="overview-open icon-button" aria-label="Открыть настройки сценария" onClick={() => setPanelView("scenario")}><ChevronUp size={21} /></button></div>
 
       {initialError && <section className="connection-error" role="alert"><span className="empty-illustration"><Activity size={28} /></span><h2>Модель пока не подключена</h2><p>{initialError}</p><button className="primary-button" onClick={() => setRetry(r => r + 1)}><RefreshCw size={16} />Повторить подключение</button></section>}
-      {placement?.kind === "road" && drawingRoad && <div className="road-draw-controls" aria-label="Рисование дороги"><span><Route size={17} /><strong>{drawingRoad.points.length < 2 ? "Поставьте начало и конец" : `${distance(roadLength(drawingRoad.points))} · ${drawingRoad.points.length} точек`}</strong></span><div><button className="quiet-action" disabled={!drawingRoad.points.length} onClick={() => setDrawingRoad(previous => previous ? { ...previous, points: previous.points.slice(0, -1) } : null)}><Undo2 size={16} />Назад</button><button className="primary-button" disabled={drawingRoad.points.length < 2} onClick={finishRoad}><Check size={17} />Готово</button></div></div>}
+      {panelView === "map" && placement?.kind === "road" && drawingRoad && <div className="road-draw-controls" aria-label="Рисование дороги"><span><Route size={17} /><strong>{drawingRoad.points.length < 2 ? "Поставьте начало и конец" : `${distance(roadLength(drawingRoad.points))} · ${drawingRoad.points.length} точек`}</strong></span>{roadError && <p className="road-tool-error" role="alert">{roadError.text}</p>}<div><button className="quiet-action" disabled={!drawingRoad.points.length} onClick={() => { setRoadError(null); setDrawingRoad(previous => previous ? { ...previous, points: previous.points.slice(0, -1) } : null); }}><Undo2 size={16} />Назад</button><button className="primary-button" disabled={drawingRoad.points.length < 2} onClick={finishRoad}><Check size={17} />Готово</button></div><button className="road-cancel text-button" onClick={cancelPlacement}>Отменить рисование</button></div>}
     </main>
 
-    <AdaptiveSheet className="control-sheet" open={panelOpen} mobile={mobile} onClose={() => setPanelView("map")}>
-      <div className="sheet-drag-zone"><button aria-label="Раскрыть панель полностью" onClick={() => expandSheet()}><span /></button></div>
-      <div className="panel-navigation"><div className="panel-tabs" role="tablist" aria-label="Панель управления"><button role="tab" aria-selected={activePanel === "scenario"} onClick={() => setPanelView("scenario")}><SlidersHorizontal size={16} />Сценарий</button><button role="tab" aria-selected={activePanel === "result"} onClick={() => setPanelView("result")}><BarChart3 size={16} />Результат{run && <span className="result-dot" />}</button></div><button className="icon-button panel-close" aria-label="Свернуть панель и показать карту" onClick={showMap}><X size={19} /></button></div>
-      <div className="panel-scroll" ref={panelScrollRef} onScroll={event => { panelPositions.current[activePanel] = event.currentTarget.scrollTop; }}>
+    <AdaptiveSheet className="control-sheet" label={activePanel === "scenario" ? "Настройки сценария" : "Результат сценария"} open={panelOpen} mobile={mobile} onClose={() => setPanelView("map")}>
+      <div className="sheet-drag-zone" aria-hidden="true"><span /></div>
+      <div className="panel-navigation"><strong className="mobile-panel-title">{activePanel === "scenario" ? "Сценарий" : "Результат"}</strong><div className="panel-tabs" role="tablist" aria-label="Панель управления"><button role="tab" aria-selected={activePanel === "scenario"} onClick={() => setPanelView("scenario")}><SlidersHorizontal size={16} />Сценарий</button><button role="tab" aria-selected={activePanel === "result"} onClick={() => setPanelView("result")}><BarChart3 size={16} />Результат{run && <span className="result-dot" />}</button></div><button className="icon-button panel-close" aria-label="Свернуть панель и показать карту" onClick={showMap}><X size={19} /></button></div>
+      <div className="panel-scroll" ref={panelScrollRef} onScroll={event => { if (!mobile || panelOpen) panelPositions.current[activePanel] = event.currentTarget.scrollTop; }}>
         <div className="scenario-content" hidden={activePanel !== "scenario"} role="tabpanel" aria-label="Настройки сценария">
           <div className="panel-intro"><div><span className="eyebrow">ГОРОД — ЭТО СВЯЗИ</span><h1>Что изменим?</h1><p>Одно решение. Новые маршруты.</p></div><button className="text-button reset-button" disabled={busy} onClick={resetAll}><RotateCcw size={14} />Сбросить</button></div>
+          {catalogs && <p className="scenario-current"><strong>{TYPES.find(type => type.id === scenarioType)?.label}</strong> · {WEATHER_NAMES[experiment.weather]}{experiment.routeEnabled ? " · личная поездка" : " · весь район"}{experiment.addedHouses.length > 0 ? ` · домов: ${experiment.addedHouses.length}` : ""}{experiment.addedRoads.length > 0 ? ` · своих дорог: ${experiment.addedRoads.length}` : ""}</p>}
           {!catalogs ? <div className="panel-skeleton" aria-hidden="true"><div /><div /><div /><div /></div> : <>
           <ExperimentPanel part="traffic" catalogs={catalogs} value={experiment} onChange={changeExperiment} placement={placement} onPlace={beginPlacement} onEditHouse={editHouse} onStartRoad={() => startRoad()} onEditRoad={editRoad} disabled={busy} />
-          <button className="demo-button" onClick={() => simulate(presets[0])} disabled={busy || pendingBaseline || !countValid || !presets.length}><span className="demo-icon"><Zap size={19} /></span><span>Демо-сценарий<small>{presets[0]?.name || "Нет доступных шаблонов"}</small></span><ArrowUpRight size={19} /></button>
-          {presets.length > 1 && <details className="scenario-accordion"><summary><Route size={16} />Шаблоны сценариев<ChevronDown size={14} /></summary><div className="accordion-body">{presets.slice(1).map(preset => <button key={preset.preset_id} className="quiet-action" disabled={busy || pendingBaseline || !countValid} onClick={() => simulate(preset)}>{preset.name}</button>)}</div></details>}
           <div className="control-section"><div className="section-label"><Route size={16} /><span>Дорожная сеть</span></div><div className="scenario-types" role="group" aria-label="Тип сценария">{TYPES.map(({ id, label, icon: Icon, description }) => <m.button whileTap={{ scale: .97 }} key={id} className={scenarioType === id ? "active" : ""} title={description} aria-pressed={scenarioType === id} disabled={busy} onClick={() => { setScenarioType(id); resetResult(); }}><Icon size={18} />{label}</m.button>)}</div>
           {scenarioType === "none" ? <p className="field-hint road-unchanged">Существующие дороги остаются открыты. Можно добавить свою дорогу, дома и изменить погоду.</p> : scenarioType === "demand_increase" ? <div className="demand-card"><Users size={20} /><span><strong>Больше машин во всём районе</strong><small>Больше машин по привычным маршрутам</small></span></div> : selected ? <div className="selected-road"><div className="selected-road-heading"><span className="road-icon"><Route size={18} /></span><strong>{selected.name}</strong><button className="icon-button" aria-label="Показать выбранный участок" disabled={busy} onClick={() => { setActiveTrip(null); setInspectSegment(null); setFocus(f => f + 1); showMap(); }}><Expand size={17} /></button></div><p className="road-direction"><ArrowRight size={14} />{selected.direction}</p><div className="road-properties"><span><small>Длина</small>{number(selected.length_m)} м</span><span><small>Скорость без пробок</small>{number(selected.speed_kmh)} км/ч</span><span><small>Движение</small><b className={isClosed ? "tone-red" : selectedRatio >= 1 ? "tone-red" : selectedRatio >= .7 ? "tone-amber" : "tone-green"}>{trafficLabel(selectedRatio, isClosed)}</b></span></div><div className="road-lanes-card"><div><span>Полосы движения</span><strong>{roadLanes(selected)}</strong></div>{selected.lane_max && <div className={`lane-diagram ${scenarioType === "closure" ? "will-close" : ""}`} aria-hidden="true">{Array.from({ length: Math.min(selected.lane_max, 8) }, (_, index) => <i key={index}><ArrowRight size={15} /></i>)}</div>}<small>{selected.lane_min ? `${selected.oneway ? "В указанном направлении" : "Всего на участке, оба направления"} · OpenStreetMap` : "В исходной карте нет данных о полосах; число не подставляется."}</small>{selected.lane_min !== selected.lane_max && selected.lane_min && <small>Количество полос меняется вдоль участка.</small>}{scenarioType === "closure" && <p>После перекрытия: проезд закрыт во всех полосах.</p>}{scenarioType === "capacity_reduction" && <p>Сужение: дорога сможет пропускать на {number((1 - factor) * 100)}% меньше машин.</p>}</div>{!selected.can_close && <p className="inline-notice"><Info size={14} />{selected.disabled_reason}</p>}</div> : <button className="empty-selection" onClick={showMap}><MousePointer2 size={22} /><span><strong>Выберите дорогу на карте</strong><small>Нажмите на участок для изменения</small></span><ArrowUpRight size={18} /></button>}
           {scenarioType === "capacity_reduction" && <div className="factor-field"><label htmlFor="capacity-factor">Сколько машин сможет проехать<strong>{number(factor * 100)}% от обычного</strong></label><input id="capacity-factor" type="range" min="0.1" max="0.9" step="0.1" value={factor} disabled={busy} onChange={e => { setFactor(+e.target.value); resetResult(); }} /><div><span>10%</span><span>90%</span></div></div>}
           {scenarioType === "demand_increase" && <div className="factor-field"><label htmlFor="demand-factor">Больше автомобилей<strong>+{number((demand - 1) * 100)}%</strong></label><input id="demand-factor" type="range" min="1.1" max="3" step="0.1" value={demand} disabled={busy} onChange={e => { setDemand(+e.target.value); resetResult(); }} /><div><span>На 10% больше</span><span>В 3 раза больше</span></div></div>}
           </div>
-          <ExperimentPanel part="settings" catalogs={catalogs} value={experiment} onChange={changeExperiment} placement={placement} onPlace={beginPlacement} onEditHouse={editHouse} onStartRoad={() => startRoad()} onEditRoad={editRoad} disabled={busy} />
+          <ExperimentPanel segments={data?.segments} part="settings" catalogs={catalogs} value={experiment} onChange={changeExperiment} placement={placement} onPlace={beginPlacement} onEditHouse={editHouse} onStartRoad={() => startRoad()} onEditRoad={editRoad} disabled={busy} />
+          <button className="demo-button" onClick={() => simulate(presets[0])} disabled={busy || pendingBaseline || !countValid || !presets.length}><span className="demo-icon"><Zap size={19} /></span><span>Демо-сценарий<small>{presets[0]?.name || "Нет доступных шаблонов"}</small></span><ArrowUpRight size={19} /></button>
+          {presets.length > 1 && <details className="scenario-accordion"><summary><Route size={16} />Шаблоны сценариев<ChevronDown size={14} /></summary><div className="accordion-body">{presets.slice(1).map(preset => <button key={preset.preset_id} className="quiet-action" disabled={busy || pendingBaseline || !countValid} onClick={() => simulate(preset)}>{preset.name}</button>)}</div></details>}
           <p className="model-note"><Info size={13} />Реальная карта, выбранное вами количество машин</p>
           </>}
         </div>
@@ -341,7 +393,7 @@ function SimulatorWorkspace() {
             <div className="result-title"><div><span className="eyebrow">РЕЗУЛЬТАТ ЭКСПЕРИМЕНТА</span><h2>{run.personal_route ? "Ваша поездка" : "Эффект изменения"}</h2></div><button className="icon-button" aria-label="Скачать результат расчёта" onClick={exportResult}><Download size={19} /></button></div>
             <div className="result-status"><span className="check-circle"><Check size={12} /></span><strong>Сравнение готово</strong></div>
             <div className="applied-scenario"><strong>{appliedTitle}</strong><small>{appliedRoad?.scenario_type === "closure" ? "Перекрытие · " : appliedRoad?.scenario_type === "capacity_reduction" ? "Сужение · " : ""}{WEATHER_NAMES[run.applied_settings?.weather_after || "dry"]} · {number(run.after.metrics.vehicle_count)} авто</small><button className="text-button" onClick={() => setPanelView("scenario")}>Изменить<ChevronRight size={14} /></button></div>
-            {run.personal_route && <PersonalResult result={run.personal_route} phase={phase} onShow={showPersonal} />}
+            {!run.personal_route && <button className="show-personal-route" onClick={showMap}><MapIcon size={18} />Показать изменения на карте<ArrowRight size={16} /></button>}{run.personal_route && <PersonalResult result={run.personal_route} phase={phase} onShow={showPersonal} />}
             {run.house_changes && (run.house_changes.added.length > 0 || run.house_changes.removed.length > 0) && <p className="housing-impact"><HouseIcon size={16} /><span>Машин от жителей: +{number(run.house_changes.added.reduce((s, h) => s + (h.vehicle_count || 0), 0))} / −{number(run.house_changes.removed.reduce((s, h) => s + (h.vehicle_count || 0), 0))} авто</span></p>}
             {!!run.added_roads?.length && <section className="new-roads-result"><h3><Route size={17} />Добавленные дороги</h3>{run.added_roads.map(road => <button key={road.road_id} onClick={() => { setPhase("after"); showChangedRoad(road.segment_id); }}><span><strong>{road.name}</strong><small>{distance(road.length_m)} · {road.lanes * (road.two_way ? 2 : 1)} {plural(road.lanes * (road.two_way ? 2 : 1), ["полоса", "полосы", "полос"])} · {road.two_way ? "в обе стороны" : "в одну сторону"}</small><small>Других машин на дороге: около {number(road.edge_ids.reduce((total, id) => total + (run.after.edge_loads[id]?.flow || 0), 0))}</small></span><ArrowUpRight size={16} /></button>)}<p>Ниже показано, как изменилось время поездок после появления дороги.</p></section>}
             <h3 className="district-result-title">Весь район</h3><div className="comparison-header"><span>Показатель</span><span>До</span><span>После</span></div>
@@ -359,16 +411,42 @@ function SimulatorWorkspace() {
           </> : <div className="result-empty"><m.span className="empty-illustration" initial={{ opacity: 0, scale: .95 }} animate={{ opacity: 1, scale: 1 }}><BarChart3 size={32} /></m.span><h2>У каждого решения<br />есть последствия</h2><p>Создайте сценарий, чтобы сравнить время поездок и движение на дорогах.</p></div>}
         </div>
       </div>
-      <div className="panel-footer"><div className="footer-error" role={error ? "alert" : undefined}>{error && <><Info size={15} /><span>{error}</span>{pendingBaseline && countValid && !baselineBusy && <button className="text-button" onClick={() => { setError(""); setBaselineRetry(r => r + 1); }}>Повторить</button>}</>}</div><button className="primary-button calculate-button" onClick={() => (activePanel === "result" && run) || resultEmpty ? setPanelView("scenario") : simulate()} disabled={resultEmpty || (activePanel === "result" && run) ? false : submitDisabled}>{busy || pendingBaseline ? <AppPreloader small /> : activePanel === "result" && run ? <SlidersHorizontal size={17} /> : <Play size={16} fill="currentColor" />}<span>{busy ? "Рассчитываем маршруты…" : pendingBaseline ? "Обновляем количество машин…" : resultEmpty ? "Создать сценарий" : activePanel === "result" && run ? "Изменить сценарий" : scenarioType === "closure" ? "Перекрыть и рассчитать" : scenarioType === "capacity_reduction" ? "Рассчитать ограничение" : scenarioType === "demand_increase" ? "Смоделировать час пик" : "Рассчитать сценарий"}</span><ArrowRight size={17} /></button><p>Сравнение сценариев, а не прогноз реальных пробок</p></div>
+      <div className="panel-footer"><div className="footer-error" role={error ? "alert" : undefined}>{error && <><Info size={15} /><span>{error}</span>{pendingBaseline && countValid && !baselineBusy && <button className="text-button" onClick={() => { setError(""); setBaselineRetry(r => r + 1); }}>Повторить</button>}</>}</div><button className="primary-button calculate-button" onClick={() => (activePanel === "result" && run) || resultEmpty ? setPanelView("scenario") : simulate()} disabled={resultEmpty || (activePanel === "result" && run) ? false : submitDisabled}>{busy || pendingBaseline ? <AppPreloader small /> : activePanel === "result" && run ? <SlidersHorizontal size={17} /> : <Play size={16} fill="currentColor" />}<span>{busy ? "Рассчитываем…" : pendingBaseline ? "Обновляем поток…" : resultEmpty ? "Создать сценарий" : activePanel === "result" && run ? "Изменить сценарий" : "Рассчитать"}</span><ArrowRight size={17} /></button><p aria-live="polite">{!countValid ? "Укажите допустимое количество машин" : pendingBaseline ? "Расчёт станет доступен после обновления потока" : routeIncomplete ? "Выберите А, Б и все точки «Через» на карте" : !busy && submitDisabled ? "Выберите доступный участок дороги на карте" : drawingRoad ? "Незавершённая дорога сохранена в черновике" : "Сравнение сценариев, а не прогноз пробок"}</p></div>
     </AdaptiveSheet>
 
-    <AdaptiveSheet className="house-sheet" open={!!editingHouse} mobile={mobile} modal onClose={() => setEditingHouseId(null)}><div className="sheet-drag-zone"><button aria-label="Раскрыть настройки дома" onClick={() => expandSheet(".house-sheet")}><span /></button></div>{editingHouse && catalogs && <HouseEditor house={editingHouse} catalogs={catalogs} disabled={busy} onChange={patch => changeHouse(editingHouse.house_id, patch)} onClose={() => setEditingHouseId(null)} onRemove={() => { changeExperiment({ addedHouses: experiment.addedHouses.filter(h => h.house_id !== editingHouse.house_id) }); setEditingHouseId(null); notify("Дом удалён из сценария"); }} onReposition={() => beginPlacement({ kind: "house", houseId: editingHouse.house_id })} />}</AdaptiveSheet>
+    <AppDialog className="house-sheet editor-dialog" open={!!editingHouse} label="Редактор дома" onClose={() => closeHouse()}>
+      {editingHouse && catalogs && <HouseEditor house={editingHouse} catalogs={catalogs} disabled={busy}
+        onChange={patch => setEditingHouse(previous => previous ? { ...previous, ...patch } : null)}
+        onClose={() => closeHouse()} onApply={() => closeHouse(true)}
+        onRemove={() => { changeExperiment({ addedHouses: experiment.addedHouses.filter(h => h.house_id !== editingHouse.house_id) }); closeHouse(); }}
+        onReposition={() => beginPlacement({ kind: "house", houseId: editingHouse.house_id })} />}
+    </AppDialog>
+    <AppDialog className="road-sheet editor-dialog" open={!!editingRoad} label="Редактор дороги" onClose={() => closeRoad()}>
+      {editingRoad && <RoadEditor road={editingRoad} disabled={busy}
+        onChange={patch => setEditingRoad(previous => previous ? { ...previous, ...patch } : null)}
+        onClose={() => closeRoad()} onApply={() => closeRoad(true)}
+        onRemove={() => { changeExperiment({ addedRoads: experiment.addedRoads.filter(road => road.road_id !== editingRoad.road_id) }); closeRoad(); }}
+        onRedraw={() => startRoad(editingRoad)} />}
+    </AppDialog>
 
-    <AdaptiveSheet className="road-sheet" open={!!editingRoad} mobile={mobile} modal onClose={() => setEditingRoadId(null)}><div className="sheet-drag-zone"><span /></div>{editingRoad && <RoadEditor road={editingRoad} disabled={busy} onChange={patch => changeRoad(editingRoad.road_id, patch)} onClose={() => { setEditingRoadId(null); setPanelView("scenario"); }} onRemove={() => { changeExperiment({ addedRoads: experiment.addedRoads.filter(road => road.road_id !== editingRoad.road_id) }); setEditingRoadId(null); notify("Дорога убрана из сценария"); }} onRedraw={() => startRoad(editingRoad)} />}</AdaptiveSheet>
+    <MobileToolbar bottom tabbar className="mobile-tabbar">{([
+      { id: "map", label: "Карта", Icon: MapIcon }, { id: "scenario", label: "Сценарий", Icon: SlidersHorizontal }, { id: "result", label: "Результат", Icon: BarChart3 },
+    ] as const).map(({ id, label, Icon }) => <button key={id} aria-label={label} aria-pressed={panelView === id} className={panelView === id ? "active" : ""} onClick={() => setPanelView(id)}><Icon size={23} /><span>{label}{id === "result" && run && <i />}</span></button>)}</MobileToolbar>
 
-    <MobileToolbar bottom tabbar className="mobile-tabbar"><button aria-label="Карта" aria-pressed={panelView === "map"} className={panelView === "map" ? "active" : ""} onClick={showMap}><MapIcon size={22} /><span>Карта</span></button><button aria-label="Сценарий" aria-pressed={panelView === "scenario"} className={panelView === "scenario" ? "active" : ""} onClick={() => { setEditingHouseId(null); setEditingRoadId(null); setDrawingRoad(null); setPlacement(null); setPanelView("scenario"); }}><SlidersHorizontal size={22} /><span>Сценарий</span></button><button aria-label="Результат" aria-pressed={panelView === "result"} className={panelView === "result" ? "active" : ""} onClick={() => { setEditingHouseId(null); setEditingRoadId(null); setDrawingRoad(null); setPlacement(null); setPanelView("result"); }}><BarChart3 size={22} /><span>Результат{run && <i />}</span></button></MobileToolbar>
+    <AppDialog className="actions-dialog" label="Действия на карте" open={actionsOpen} onClose={() => setActionsOpen(false)}>
+      <div className="editor-heading" data-sheet-handle><strong>Действия на карте</strong><button className="icon-button" aria-label="Закрыть действия" onClick={() => setActionsOpen(false)}><X size={20} /></button></div>
+      <div className="dialog-scroll action-list">
+        <button aria-label="Мой маршрут" disabled={busy || !data} onClick={() => { changeExperiment({ routeEnabled: true }); beginPlacement({ kind: "route", index: 0 }); }}><Navigation size={22} /><span>Мой маршрут<small>Выберите начало А и конец Б</small></span><ChevronRight size={18} /></button>
+        <button aria-label="Добавить дом" disabled={busy || !data || experiment.addedHouses.length >= 10} onClick={() => { changeExperiment({ showHouses: true }); beginPlacement({ kind: "house" }); }}><HouseIcon size={22} /><span>Добавить дом<small>Укажите жителей и направление поездок</small></span><ChevronRight size={18} /></button>
+        <button aria-label={drawingRoad ? "Продолжить дорогу" : "Своя дорога"} disabled={busy || !data || !drawingRoad && experiment.addedRoads.length >= 5} onClick={() => { if (drawingRoad) { setPlacement({ kind: "road" }); setPanelView("map"); setActionsOpen(false); } else startRoad(); }}><Route size={22} /><span>{drawingRoad ? "Продолжить дорогу" : "Своя дорога"}<small>{drawingRoad ? `${drawingRoad.points.length} точек в черновике` : "Соедините два перекрёстка"}</small></span><ChevronRight size={18} /></button>
+        <button aria-label="Снести дом" disabled={busy || !catalogs?.houses.length} onClick={() => { changeExperiment({ showHouses: true }); beginPlacement({ kind: "demolish" }); }}><Trash2 size={22} /><span>Снести дом<small>Убрать машины жителей из сценария</small></span><ChevronRight size={18} /></button>
+      </div>
+    </AppDialog>
 
-    <dialog ref={help} className="help-dialog" onClick={e => { if (e.target === help.current) help.current.close(); }}><div className="help-content"><button className="dialog-close icon-button" aria-label="Закрыть описание" onClick={() => help.current?.close()}><X size={21} /></button><span className="help-brand"><Butterfly /></span><span className="eyebrow">ЭФФЕКТ БАБОЧКИ · FARPOST</span><h2>Город — это связи</h2><p>Измените условия на карте и проследите, как одно решение меняет маршруты всего района.</p><ol className="help-steps"><li><span>1</span><div><strong>Выберите машины и маршрут</strong><p>Выберите количество авто и поставьте точки поездки.</p></div></li><li><span>2</span><div><strong>Соедините условия</strong><p>Погода, парковки, дома и дороги работают вместе.</p></div></li><li><span>3</span><div><strong>Сравните результат</strong><p>Личная поездка и район показывают «До / После».</p></div></li></ol><div className="help-model"><Info size={18} /><p>Карта — OpenStreetMap. Количество машин, занятость парковок и вместимость дорог заданы для эксперимента. Это эксперимент, а не прогноз реальных пробок.</p></div><ExperimentHelp catalogs={catalogs} /><button className="primary-button" onClick={() => help.current?.close()}>Начать эксперимент<ArrowRight size={17} /></button></div></dialog>
+    <AppDialog className="help-dialog" open={helpOpen} label="Как это работает" onClose={() => setHelpOpen(false)}>
+      <div className="editor-heading" data-sheet-handle><strong>Как это работает</strong><button className="dialog-close icon-button" aria-label="Закрыть описание" onClick={() => setHelpOpen(false)}><X size={21} /></button></div>
+      <div className="help-content dialog-scroll"><span className="help-brand"><Butterfly /></span><span className="eyebrow">ЭФФЕКТ БАБОЧКИ · FARPOST</span><h2>Город — это связи</h2><p>Измените условия на карте и проследите, как одно решение меняет маршруты всего района.</p><ol className="help-steps"><li><span>1</span><div><strong>Выберите машины и маршрут</strong><p>Выберите количество авто и поставьте точки поездки.</p></div></li><li><span>2</span><div><strong>Соедините условия</strong><p>Погода, парковки, дома и дороги работают вместе.</p></div></li><li><span>3</span><div><strong>Сравните результат</strong><p>Личная поездка и район показывают «До / После».</p></div></li></ol><div className="help-model"><Info size={18} /><p>Карта — OpenStreetMap. Количество машин, занятость парковок и вместимость дорог заданы для эксперимента. Это эксперимент, а не прогноз реальных пробок.</p></div><ExperimentHelp catalogs={catalogs} /><button className="primary-button" onClick={() => setHelpOpen(false)}>Начать эксперимент<ArrowRight size={17} /></button></div>
+    </AppDialog>
   </div>;
 }
 

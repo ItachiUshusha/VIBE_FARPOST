@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Framework7 from "framework7/lite";
 import SheetModule from "framework7/components/sheet";
 import ToastModule from "framework7/components/toast";
@@ -58,10 +58,18 @@ export function useAppEnvironment() {
       const height = viewport?.height || innerHeight;
       document.documentElement.style.setProperty("--visual-height", `${height}px`);
       document.documentElement.style.setProperty("--keyboard-gap", `${Math.max(0, innerHeight - height - (viewport?.offsetTop || 0))}px`);
+      document.documentElement.dataset.keyboardOpen = String(innerHeight - height > 120 && /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || ""));
     };
     update(); viewport?.addEventListener("resize", update); viewport?.addEventListener("scroll", update);
     window.addEventListener("resize", update);
-    return () => { viewport?.removeEventListener("resize", update); viewport?.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
+    window.addEventListener("focusin", update); window.addEventListener("focusout", update);
+    return () => {
+      viewport?.removeEventListener("resize", update); viewport?.removeEventListener("scroll", update); window.removeEventListener("resize", update);
+      window.removeEventListener("focusin", update); window.removeEventListener("focusout", update);
+      delete document.documentElement.dataset.keyboardOpen;
+      document.documentElement.style.removeProperty("--keyboard-gap");
+      document.documentElement.style.removeProperty("--visual-height");
+    };
   }, []);
   return { mobile, dark, reducedMotion: !!reducedMotion, theme, toggleTheme: () => setTheme(dark ? "light" : "dark") };
 }
@@ -78,49 +86,17 @@ export function notify(text: string) {
 
 export function expandSheet(selector = ".control-sheet") { f7?.sheet?.get(selector)?.setBreakpoint(1); }
 
-export function AdaptiveSheet({ children, className, open, mobile, onClose, modal = false }: {
-  children: ReactNode; className: string; open: boolean; mobile: boolean; onClose: () => void; modal?: boolean;
+export function AdaptiveSheet({ children, className, open, mobile, onClose, label = "Панель эксперимента" }: {
+  children: ReactNode; className: string; open: boolean; mobile: boolean; onClose: () => void; label?: string;
 }) {
   const reduced = useReducedMotion();
-  const [breakpoint, setBreakpoint] = useState(1);
-  const onBreakpoint = useCallback((_instance: unknown, value: number) => setBreakpoint(value), []);
-  const latest = useRef({ open, mobile, onClose }); latest.current = { open, mobile, onClose };
-  const surface = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!mobile || !open || modal) return;
-    const fitShortScreen = () => { if (innerHeight < 560) expandSheet(`.${className}`); };
-    fitShortScreen(); window.addEventListener("resize", fitShortScreen);
-    return () => window.removeEventListener("resize", fitShortScreen);
-  }, [mobile, open, modal, className]);
-  useEffect(() => {
-    if (!open || !mobile) return;
-    const previous = document.activeElement as HTMLElement | null;
-    if (modal) surface.current?.focus({ preventScroll: true });
-    const keydown = (event: KeyboardEvent) => {
-      if (event.key !== "Tab" || !modal || !surface.current) return;
-      const items = [...surface.current.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), select:not(:disabled), a[href], [tabindex="0"]')].filter(el => el.offsetParent !== null);
-      const first = items[0], last = items.at(-1);
-      if (!first || !last) return;
-      if (event.shiftKey && (document.activeElement === first || document.activeElement === surface.current)) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-    };
-    document.addEventListener("keydown", keydown);
-    return () => {
-      document.removeEventListener("keydown", keydown);
-      if (previous?.isConnected && (document.activeElement === document.body || surface.current?.contains(document.activeElement))) previous.focus({ preventScroll: true });
-    };
-  }, [open, mobile, modal]);
-  return <Sheet className={`${className}${open ? " is-active" : ""}${breakpoint > 0 && breakpoint < 1 ? " sheet-partial" : ""}${breakpoint > 0 && breakpoint < .5 ? " sheet-compact" : ""}`} opened={mobile && open} animate={!reduced} containerEl=".app-shell"
-    backdrop={modal} closeByBackdropClick={modal} closeByOutsideClick={false} closeOnEscape swipeToClose
-    swipeHandler={`.${className} .sheet-drag-zone`} breakpoints={modal ? [] : [.36, .7]}
-    onSheetOpen={instance => { instance?.off("breakpoint", onBreakpoint); instance?.on("breakpoint", onBreakpoint); if (!modal && latest.current.mobile) instance?.setBreakpoint(innerHeight < 560 ? 1 : .7); }}
-    onSheetClosed={() => { setBreakpoint(1); if (latest.current.open && latest.current.mobile) latest.current.onClose(); }}>
-    <div ref={surface} className="sheet-surface" role={modal && mobile ? "dialog" : "region"} aria-modal={modal && mobile ? true : undefined}
-      aria-label={modal ? "Редактор дома" : "Панель эксперимента"} tabIndex={-1}
-      onFocusCapture={event => { if (mobile && /INPUT|SELECT|TEXTAREA/.test((event.target as HTMLElement).tagName)) expandSheet(`.${className}`); }}>
-      {children}
-      {!modal && <span className="compact-sheet-hint">Потяните вверх или нажмите на захват</span>}
-    </div>
+  const latest = useRef({ open, mobile, onClose });
+  useEffect(() => { latest.current = { open, mobile, onClose }; }, [open, mobile, onClose]);
+  return <Sheet className={`${className}${open ? " is-active" : ""}`} opened={mobile && open} animate={!reduced} containerEl=".app-shell"
+    backdrop={false} closeByBackdropClick={false} closeByOutsideClick={false} closeOnEscape swipeToClose
+    swipeHandler={`.${className} .panel-navigation, .${className} .sheet-drag-zone`} breakpoints={[]}
+    onSheetClosed={() => { if (latest.current.open && latest.current.mobile) latest.current.onClose(); }}>
+    <div className="sheet-surface" role="region" aria-label={label}>{children}</div>
   </Sheet>;
 }
 

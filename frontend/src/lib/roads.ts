@@ -12,6 +12,26 @@ export function roadLength(points: Coordinate[]) {
   return points.slice(1).reduce((sum, point, index) => sum + metresBetween(points[index], point), 0);
 }
 
+/** A local street label from the existing OSM geometry; no geocoder request. */
+export function pointStreetName(point: Coordinate, segments: Segment[], radius: number) {
+  const scaleX = 111195 * Math.cos(point.lat * Math.PI / 180);
+  let nearest = radius;
+  let name: string | null = null;
+  for (const segment of segments) {
+    if (!segment.name || segment.name === "Безымянный проезд") continue;
+    const coordinates = segment.geometry.coordinates;
+    for (let index = 1; index < coordinates.length; index++) {
+      const [a, b] = [coordinates[index - 1], coordinates[index]];
+      const ax = (a[0] - point.lon) * scaleX, ay = (a[1] - point.lat) * 111195;
+      const dx = (b[0] - a[0]) * scaleX, dy = (b[1] - a[1]) * 111195;
+      const fraction = Math.max(0, Math.min(1, -(ax * dx + ay * dy) / (dx * dx + dy * dy || 1)));
+      const gap = Math.hypot(ax + fraction * dx, ay + fraction * dy);
+      if (gap < nearest) { nearest = gap; name = segment.name; }
+    }
+  }
+  return name;
+}
+
 export function nearestJunction(data: MapData, point: Coordinate, radius: number) {
   const junctions = data.junctions || [];
   let nearest: { point: Coordinate; distance: number; nodeId: string } | null = null;

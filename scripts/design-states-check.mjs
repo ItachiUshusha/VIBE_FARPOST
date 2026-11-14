@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { writeFile } from "node:fs/promises";
-import { base, launch, createPage, ready, openScenario, showMap, openDetails, calculate, screenshot, resetCamera, clickMap } from "./design-test-utils.mjs";
+import { base, launch, createPage, ready, openScenario, showMap, openDetails, calculate, screenshot, resetCamera, clickMap, chooseMapAction } from "./design-test-utils.mjs";
 
 const catalog = await (await fetch(base + "/api/catalogs")).json();
 const mapData = await (await fetch(base + "/api/map")).json();
@@ -57,7 +57,7 @@ try {
     await screenshot(page, `states-${name}-parking-warning`);
     await showMap(page);
     await resetCamera(page);
-    await page.getByRole("button", { name: "Добавить дом", exact: true }).click();
+    await chooseMapAction(page, "Добавить дом");
     await clickMap(page, mapData, mapData.center);
     await page.locator(".house-map-editor").waitFor();
     assert.equal(await page.getByLabel("Количество жильцов", { exact: true }).inputValue(), "40");

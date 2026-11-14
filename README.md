@@ -251,6 +251,8 @@ node scripts/design-panel-check.mjs
 
 Используется установленный Chrome с отдельным временным профилем. Функциональные JSON-отчёты сохраняются в `artifacts/`, скриншоты редизайна и измерения CLS — в `artifacts/design/`. Текущая методика и результаты редизайна описаны в [QA-DESIGN.md](QA-DESIGN.md), дизайн-система — в [DESIGN.md](DESIGN.md). Исторические отчёты: [исправления модели](QA-FIXES.md), [расширение](QA-EXTENDED.md), [первоначальный MVP](QA.md). Сценарий выступления — в [DEMO-EXTENDED.md](DEMO-EXTENDED.md).
 
+Мобильные изменения от 14.11.2026 описаны в [MOBILE-UX-IMPLEMENTATION.md](MOBILE-UX-IMPLEMENTATION.md). После отдельного разрешения владельца frontend пересобран и запущен локально; просмотр открытых окон подтвердил полную ширину, артефакты — в `artifacts/mobile-width/`. Тестовые наборы этой версии не запускались; полной приёмки нет. Обновлённый `design-panel-check.mjs` при будущем запуске сохраняет артефакты в `artifacts/mobile-ux/`.
+
 ## Структура
 
 ```text

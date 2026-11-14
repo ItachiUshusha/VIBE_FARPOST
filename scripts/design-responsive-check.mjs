@@ -79,8 +79,10 @@ try {
     page=await createPage(browser,errors,width,height,{colorScheme:"dark",reducedMotion:"reduce"});await instrument(page);await page.goto(base);await ready(page);await openScenario(page);await screenshot(page,`dark-reduced-${width}`);
     assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).colorScheme),"dark");
     if(width===390) await verifyContrast(page,"dark");
+    if (width <= 900) { await showMap(page); await page.getByRole("button", { name: "Настроить слои карты", exact: true }).click(); }
     assert.equal(await page.getByRole("button",{name:"Продолжить анимацию",exact:true}).count(),1);
     assert.equal(await page.getByRole("button",{name:"Продолжить анимацию",exact:true}).isDisabled(),true);
+    if (width <= 900) await page.getByRole("button", { name: "Закрыть слои", exact: true }).click();
     await demo(page);await screenshot(page,`dark-result-${width}`);await record(page,"dark-and-reduced-motion",width,height,"dark");await page.close();
   }
   checks.push("Системная тёмная тема и reduced motion работают на телефоне и компьютере");
